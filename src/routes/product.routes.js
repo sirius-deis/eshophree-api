@@ -8,7 +8,7 @@ const productRouter = express.Router();
 productRouter.route("/").get(productController.getAllProducts);
 
 productRouter.route("/:productId").get(productController.getProductById);
-productRouter.use("/:productId/cart", cartRouter);
+productRouter.use("/:productId/carts", cartRouter);
 
 productRouter.route("/category/:categoryName").get(productController.getAllProductsWithinCategory);
 
