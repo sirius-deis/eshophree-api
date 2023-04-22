@@ -33,12 +33,6 @@ const UserSchema = new mongoose.Schema({
     },
 });
 
-UserSchema.virtual("cart", {
-    ref: "Cart",
-    localField: "cartId",
-    foreignField: "_id",
-});
-
 UserSchema.pre("save", async function (next) {
     if (this.isModified("password") || this.isNew) {
         return next();

@@ -32,14 +32,16 @@ exports.login = catchAsync(async (req, res) => {
     if (!email && !password) {
         throw new AppError("Email and password are required", 400);
     }
-    const user = await User.findOne({ email }).select("+password").populate("cart");
+    const user = await User.findOne({ email }).select("+password -__v");
     if (!user || !(await user.checkPassword(password, user.password))) {
         throw new AppError("Incorrect email or password", 400);
     }
+    user.password = undefined;
     res.cookie("token", signToken(user._id), {
         expires: new Date(Date.now() + parseInt(process.env.JWT_EXPIRES_IN) * 24 * 60 * 60 * 1000),
     });
-    return res.status(200).json({ message: "You was sign in successfully", data: user });
+    const cart = await Cart.findOne({ userId: user._id }).select("-__v");
+    return res.status(200).json({ message: "You was sign in successfully", data: { user, cart } });
 });
 
 exports.logout = (req, res) => {
@@ -52,6 +54,8 @@ exports.delete = catchAsync(async (req, res) => {
     if (!id) {
         throw new AppError("Unknown user id", 404);
     }
-    await User.deleteOne({ _id: req.params.id });
+    res.clearCookie("token");
+    await User.deleteOne({ _id: id });
+    await Cart.deleteOne({ userId: id });
     res.status(204).end();
 });
