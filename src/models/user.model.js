@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
@@ -23,8 +23,9 @@ const UserSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        lowercase: true,
         required: [true, "password field can't be blank, please provide a password"],
+        minlength: 8,
+        select: false,
     },
     passwordChangedAt: Date,
 });
@@ -41,11 +42,14 @@ UserSchema.pre("save", async function (next) {
     if (!this.isModified("password")) {
         return next();
     }
-    const user = this;
-    const hash = await bcrypt.hash(user.password, 10);
-    user.password = hash;
+    this.password = await bcrypt.hash(this.password, 10);
     next();
 });
+
+UserSchema.methods.checkPassword = async (assumedPassword, userPassword) => {
+    const same = await bcrypt.compare(assumedPassword, userPassword);
+    return same;
+};
 
 const User = mongoose.model("User", UserSchema);
 

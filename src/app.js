@@ -11,6 +11,8 @@ const rateLimit = require("express-rate-limit");
 const connect = require("./db/connection");
 const userRoutes = require("./routes/user.routes");
 
+const AppError = require("./utils/appError");
+
 const app = express();
 
 const corsOptions = {
@@ -48,8 +50,9 @@ const start = () => {
 
 app.use("/api/v1/users", userRoutes);
 
-app.all("*", (req, res) => {
-    res.status(404).json({ message: `Can't find ${req.originalUrl} on this server` });
+app.all("*", (req, res, next) => {
+    next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
+    // res.status(404).json({ message: `Can't find ${req.originalUrl} on this server` });
 });
 
 connect();
