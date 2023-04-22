@@ -34,7 +34,7 @@ exports.login = catchAsync(async (req, res) => {
     if (!user || !(await user.checkPassword(password, user.password))) {
         throw new AppError("Incorrect email or password", 400);
     }
-    res.cookie("jwt", signToken(user._id), {
+    res.cookie("token", signToken(user._id), {
         expires: new Date(Date.now() + parseInt(process.env.JWT_EXPIRES_IN) * 24 * 60 * 60 * 1000),
     });
     return res.status(200).json({ message: "You was sign in successfully" });
@@ -48,5 +48,3 @@ exports.delete = catchAsync(async (req, res) => {
     await User.deleteOne({ _id: req.params.id });
     res.status(204).json({ message: "deleted" });
 });
-
-exports.isLoggedIn = catchAsync(async (req, res) => {});
