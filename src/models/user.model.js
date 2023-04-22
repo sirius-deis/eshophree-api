@@ -27,7 +27,10 @@ const UserSchema = new mongoose.Schema({
         minlength: 8,
         select: false,
     },
-    passwordChangedAt: Date,
+    passwordChangedAt: {
+        type: Date,
+        select: false,
+    },
 });
 
 UserSchema.pre("save", async function (next) {
@@ -47,8 +50,7 @@ UserSchema.pre("save", async function (next) {
 });
 
 UserSchema.methods.checkPassword = async (assumedPassword, userPassword) => {
-    const same = await bcrypt.compare(assumedPassword, userPassword);
-    return same;
+    return await bcrypt.compare(assumedPassword, userPassword);
 };
 
 const User = mongoose.model("User", UserSchema);

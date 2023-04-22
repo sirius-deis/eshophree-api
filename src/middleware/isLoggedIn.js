@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 const AppError = require("../utils/appError");
 
-module.exports = isLoggedIn = catchAsync(async (req, res, next) => {
+module.exports = isLoggedIn = (req, res, next) => {
     const { token } = req.cookies;
     if (!token) {
         throw new AppError("Sign in before trying to access this route", 401);
@@ -13,4 +13,4 @@ module.exports = isLoggedIn = catchAsync(async (req, res, next) => {
     }
     req.user = payload;
     next();
-});
+};

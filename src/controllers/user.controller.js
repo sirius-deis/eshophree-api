@@ -37,14 +37,19 @@ exports.login = catchAsync(async (req, res) => {
     res.cookie("token", signToken(user._id), {
         expires: new Date(Date.now() + parseInt(process.env.JWT_EXPIRES_IN) * 24 * 60 * 60 * 1000),
     });
-    return res.status(200).json({ message: "You was sign in successfully" });
+    return res.status(200).json({ message: "You was sign in successfully", data: user });
 });
 
+exports.logout = (req, res) => {
+    res.clearCookie("token");
+    res.status(202).end();
+};
+
 exports.delete = catchAsync(async (req, res) => {
-    const { id } = req.body;
+    const { id } = req.params;
     if (!id) {
         throw new AppError("Unknown user id", 404);
     }
     await User.deleteOne({ _id: req.params.id });
-    res.status(204).json({ message: "deleted" });
+    res.status(204).end();
 });
