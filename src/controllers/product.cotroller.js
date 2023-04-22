@@ -10,7 +10,13 @@ exports.getAllProducts = catchAsync(async (req, res) => {
     res.status(200).json({ message: "Products were found", data: products });
 });
 
-exports.getAllProductsWithinCategory = catchAsync(async (req, res) => {});
+exports.getAllProductsWithinCategory = catchAsync(async (req, res) => {
+    const { categoryName } = req.params;
+
+    const products = await Product.find({ category: categoryName });
+
+    res.status(200).json({ message: "Products with given category were found", data: products });
+});
 
 exports.getProductById = catchAsync(async (req, res) => {
     const productId = req.params.productId;
