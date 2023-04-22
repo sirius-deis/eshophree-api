@@ -16,19 +16,35 @@ const UserSchema = new mongoose.Schema({
         unique: true,
         required: [true, "email field can't be blank, please provide an email address"],
     },
+    role: {
+        type: String,
+        enum: ["user", "admin"],
+        default: "user",
+    },
     password: {
         type: String,
         lowercase: true,
         required: [true, "password field can't be blank, please provide a password"],
     },
+    passwordChangedAt: Date,
 });
 
-UserSchema.pre("save", () => {
+UserSchema.pre("save", async function (next) {
+    if (this.isModified("password") || this.isNew) {
+        return next();
+    }
+    this.passwordChangedAt = Date.now() - 1000;
+    next();
+});
+
+UserSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) {
+        return next();
+    }
     const user = this;
-    bcrypt.hash(user.password, 10, (error, hash) => {
-        user.password = hash;
-        next();
-    });
+    const hash = await bcrypt.hash(user.password, 10);
+    user.password = hash;
+    next();
 });
 
 const User = mongoose.model("User", UserSchema);

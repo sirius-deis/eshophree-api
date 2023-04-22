@@ -9,6 +9,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 const rateLimit = require("express-rate-limit");
 
 const connect = require("./db/connection");
+const userRoutes = require("./routes/user.routes");
 
 const app = express();
 
@@ -45,8 +46,10 @@ const start = () => {
     }
 };
 
-app.get("/", (req, res) => {
-    res.status(200).json({ message: "OK" });
+app.use("/api/v1/users", userRoutes);
+
+app.all("*", (req, res) => {
+    res.status(404).json({ message: `Can't find ${req.originalUrl} on this server` });
 });
 
 connect();
