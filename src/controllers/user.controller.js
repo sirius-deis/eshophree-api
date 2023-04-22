@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 
 const AppError = require("../utils/appError");
 const User = require("../models/user.model");
+const Cart = require("../models/cart.model");
 
 const catchAsync = require("../utils/catchAsync");
 
@@ -16,12 +17,13 @@ exports.signup = catchAsync(async (req, res, next) => {
     if (password !== passwordConfirm) {
         throw new AppError("Passwords are different", 400);
     }
-    await User.create({
+    const user = await User.create({
         name,
         surname,
         email,
         password,
     });
+    await Cart.create({ userId: user._id, products: [] });
     res.status(201).json({ message: "Account was successfully created" });
 });
 
@@ -30,7 +32,7 @@ exports.login = catchAsync(async (req, res) => {
     if (!email && !password) {
         throw new AppError("Email and password are required", 400);
     }
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email }).select("+password").populate("cart");
     if (!user || !(await user.checkPassword(password, user.password))) {
         throw new AppError("Incorrect email or password", 400);
     }
