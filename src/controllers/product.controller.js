@@ -3,8 +3,6 @@ const AppError = require("../utils/appError");
 
 const Product = require("../models/product.model");
 
-const brands = ["Brand1", "Brand2", "Brand3", "Brand4", "Brand5", "Brand6", "Brand7", "Brand8", "Brand9", "Brand10"];
-
 exports.getAllProducts = catchAsync(async (req, res) => {
     const products = await Product.find();
     res.status(200).json({ message: "Products were found", data: products });

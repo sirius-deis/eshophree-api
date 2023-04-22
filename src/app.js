@@ -11,6 +11,7 @@ const rateLimit = require("express-rate-limit");
 const connect = require("./db/connection");
 const userRoutes = require("./routes/user.routes");
 const productRouter = require("./routes/product.routes");
+const cartRouter = require("./routes/cart.routes");
 
 const AppError = require("./utils/appError");
 
@@ -51,6 +52,7 @@ const start = () => {
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/products", productRouter);
+app.use("/api/v1/carts", cartRouter);
 
 app.all("*", (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

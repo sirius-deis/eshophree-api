@@ -14,6 +14,7 @@ const CartSchema = mongoose.Schema({
             quantity: {
                 type: Number,
                 required: [true, "This field can't be blank"],
+                default: 0,
             },
         },
     ],
