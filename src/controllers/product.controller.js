@@ -4,7 +4,8 @@ const AppError = require("../utils/appError");
 const Product = require("../models/product.model");
 
 exports.getAllProducts = catchAsync(async (req, res) => {
-    const products = await Product.find();
+    const { skip = 0, limit = 10 } = req.query;
+    const products = await Product.find().skip(skip).limit(limit);
     res.status(200).json({ message: "Products were found", data: products });
 });
 
