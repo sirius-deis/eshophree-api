@@ -29,6 +29,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res) => {
     const { email, password } = req.body;
+
     if (!email && !password) {
         throw new AppError("Email and password are required", 400);
     }
@@ -46,7 +47,7 @@ exports.login = catchAsync(async (req, res) => {
 
 exports.logout = (req, res) => {
     res.clearCookie("token");
-    res.status(202).end();
+    res.status(202).json({ message: "Successfully" });
 };
 
 exports.delete = catchAsync(async (req, res) => {
@@ -58,4 +59,15 @@ exports.delete = catchAsync(async (req, res) => {
     await User.deleteOne({ _id: id });
     await Cart.deleteOne({ userId: id });
     res.status(204).end();
+});
+
+exports.grabData = catchAsync(async (req, res) => {
+    const { id } = req.user;
+    const user = await User.findById({ _id: id });
+    if (!user) {
+        throw new AppError("Unknown user id", 404);
+    }
+    const cart = await Cart.findOne({ userId: user._id }).populate("products.productId");
+
+    return res.status(200).json({ message: "You was sign in successfully", data: { user, cart } });
 });

@@ -7,6 +7,7 @@ const userRouter = express.Router();
 userRouter.post("/signup", userController.signup);
 userRouter.post("/login", userController.login);
 userRouter.get("/logout", isLoggedIn, userController.logout);
+userRouter.get("/grab", isLoggedIn, userController.grabData);
 
 userRouter.route("/delete/:id").delete(isLoggedIn, userController.delete);
 

@@ -4,7 +4,7 @@ const isLoggedIn = require("../middleware/isLoggedIn");
 
 const cartRouter = express.Router();
 
-cartRouter.post("/", isLoggedIn, cartController.addToCart);
+cartRouter.post("/:productId", isLoggedIn, cartController.addToCart);
 cartRouter.delete("/:productId", isLoggedIn, cartController.removeFromCart);
 
 cartRouter.delete("/clear", isLoggedIn, cartController.clearCart);

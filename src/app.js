@@ -1,4 +1,5 @@
 require("dotenv").config();
+const path = require("path");
 const { log } = require("mercedlogger");
 const express = require("express");
 const cors = require("cors");
@@ -28,6 +29,7 @@ const limiter = rateLimit({
     message: "Too many request from this IP, please try again in an hour",
 });
 
+app.use(express.static(path.resolve(__dirname, "public")));
 app.use(cors(corsOptions));
 app.use(morgan("tiny"));
 app.use(express.json({ limit: "10kb" }));
