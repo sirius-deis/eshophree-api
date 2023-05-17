@@ -1,14 +1,20 @@
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const AppError = require('../utils/appError');
 const User = require('../models/user.model');
 const Cart = require('../models/cart.model');
+const Token = require('../models/token.model');
+const sendEmail = require('../utils/email');
 
 const catchAsync = require('../utils/catchAsync');
 
+const { JWT_SECRET, JWT_EXPIRES_IN, BCRYPT_SALT } = process.env;
+
 const signToken = id => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRES_IN,
+    return jwt.sign({ id }, JWT_SECRET, {
+        expiresIn: JWT_EXPIRES_IN,
     });
 };
 
@@ -36,6 +42,19 @@ const checkPassword = (password1, password2) => {
             400
         );
     }
+};
+
+const deleteResetTokenIfExist = async userId => {
+    const token = await Token.findOne({ userId });
+    if (token) {
+        await token.deleteOne();
+    }
+};
+
+const createResetToken = async () => {
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hash = await bcrypt.hash(resetToken, +BCRYPT_SALT);
+    return hash;
 };
 
 exports.signup = catchAsync(async (req, res) => {
@@ -113,6 +132,9 @@ exports.forgetPassword = catchAsync(async (req, res) => {
         throw new AppError('There is no user with such email', 404);
     }
 
+    await deleteResetTokenIfExist(user._id);
+    const token = await createResetToken();
+    await sendEmail('Reset token', user.email, token);
     res.status(200).json({
         message: 'Your reset token was sent on your email',
     });

@@ -1,8 +1,6 @@
 const nodemailer = require('nodemailer');
 const { log } = require('mercedlogger');
 
-const AppError = require('./appError');
-
 const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } = process.env;
 
 const sendEmail = async (subject, to, text) => {
