@@ -6,17 +6,14 @@ const userRouter = express.Router();
 
 userRouter.post('/signup', userController.signup);
 userRouter.post('/login', userController.login);
-userRouter.post('/forget-password', userController.forgetPassword);
-userRouter.post(
-    '/update-password',
-    auth.isLoggedIn,
-    userController.updatePassword
-);
 userRouter.post('/reset-password/:token', userController.resetPassword);
 
-userRouter.get('/logout', auth.isLoggedIn, userController.logout);
-userRouter.get('/grab', auth.isLoggedIn, userController.grabData);
+userRouter.use(auth.isLoggedIn);
 
-userRouter.route('/delete').delete(auth.isLoggedIn, userController.delete);
+userRouter.post('/forget-password', userController.forgetPassword);
+userRouter.post('/update-password', userController.updatePassword);
+userRouter.get('/logout', userController.logout);
+userRouter.get('/grab', userController.grabData);
+userRouter.delete('/delete', userController.delete);
 
 module.exports = userRouter;

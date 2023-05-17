@@ -5,9 +5,9 @@ const Cart = require('../models/cart.model');
 
 exports.addToCart = catchAsync(async (req, res) => {
     const { productId } = req.params;
-    const { id } = req.user;
+    const user = req.user;
     const { quantity } = req.body;
-    const cart = await Cart.findOne({ userId: id });
+    const cart = await Cart.findOne({ userId: user._id });
     if (!cart) {
         throw new AppError('You are not logged in', 404);
     }
@@ -30,8 +30,8 @@ exports.addToCart = catchAsync(async (req, res) => {
 
 exports.removeFromCart = catchAsync(async (req, res) => {
     const { productId } = req.params;
-    const { id } = req.user;
-    const cart = await Cart.findOne({ userId: id });
+    const user = req.user;
+    const cart = await Cart.findOne({ userId: user._id });
     if (!cart) {
         throw new AppError('You are not logged in', 404);
     }
@@ -55,8 +55,8 @@ exports.removeFromCart = catchAsync(async (req, res) => {
 });
 
 exports.clearCart = catchAsync(async (req, res) => {
-    const { id } = req.user;
-    const cart = await Cart.findOne({ userId: id });
+    const user = req.user;
+    const cart = await Cart.findOne({ userId: user._id });
     if (!cart) {
         throw new AppError('You are not logged in', 404);
     }

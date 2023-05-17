@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
 
 const AppError = require('../utils/appError');
+const User = require('../models/user.model');
 
-exports.isLoggedIn = (req, res, next) => {
+exports.isLoggedIn = async (req, res, next) => {
     const { token } = req.cookies;
     if (!token) {
         throw new AppError('Sign in before trying to access this route', 401);
@@ -11,8 +12,19 @@ exports.isLoggedIn = (req, res, next) => {
     if (!payload) {
         throw new AppError('Token verification failed', 401);
     }
-    req.user = payload;
+
+    req.user = await User.findById(payload.id);
     next();
 };
 
-exports.isAdmin = (req, res, next) => {};
+exports.restrictTo = requiredRole => {
+    return (req, res, next) => {
+        const user = req.user;
+
+        if (user.role !== requiredRole) {
+            throw new AppError("You don't have access to this route", 403);
+        }
+
+        next();
+    };
+};

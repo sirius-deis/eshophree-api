@@ -4,13 +4,10 @@ const auth = require('../middlewares/auth.middlewares');
 
 const cartRouter = express.Router();
 
-cartRouter.post('/:productId', auth.isLoggedIn, cartController.addToCart);
-cartRouter.delete(
-    '/:productId',
-    auth.isLoggedIn,
-    cartController.removeFromCart
-);
+cartRouter.use(auth.isLoggedIn);
 
-cartRouter.delete('/clear', auth.isLoggedIn, cartController.clearCart);
+cartRouter.post('/:productId', cartController.addToCart);
+cartRouter.delete('/clear', cartController.clearCart);
+cartRouter.delete('/:productId', cartController.removeFromCart);
 
 module.exports = cartRouter;

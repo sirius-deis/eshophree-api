@@ -81,7 +81,7 @@ exports.login = catchAsync(async (req, res) => {
     checkFieldsLength(email, password);
 
     const user = await User.findOne({ email }).select('+password -__v');
-    if (!user || !(await user.comparePassword(password, user.password))) {
+    if (!user || !(await user.checkPassword(password, user.password))) {
         throw new AppError('Incorrect email or password', 400);
     }
     user.password = undefined;
@@ -99,16 +99,12 @@ exports.login = catchAsync(async (req, res) => {
 });
 
 exports.updatePassword = catchAsync(async (req, res) => {
-    const { id } = req.user;
+    const user = req.user;
     const { password, newPassword, newPasswordConfirm } = req.body;
 
     checkFieldsPresence(password, newPassword, newPasswordConfirm);
     checkFieldsLength(password, newPassword, newPasswordConfirm);
 
-    const user = await User.findById(id).select('+password -__v');
-    if (!user) {
-        throw new AppError('User with such id was not found', 404);
-    }
     if (!(await user.comparePassword(password, user.password))) {
         throw new AppError('Incorrect password', 401);
     }
@@ -173,34 +169,21 @@ exports.resetPassword = catchAsync(async (req, res) => {
 });
 
 exports.logout = catchAsync((req, res) => {
-    const { id } = req.user;
-    if (!id) {
-        throw new AppError(
-            'You must be logged in to perform this operation',
-            404
-        );
-    }
     res.clearCookie('token');
     res.status(202).json({ message: 'Successfully' });
 });
 
 exports.delete = catchAsync(async (req, res) => {
-    const { id } = req.user;
-    if (!id) {
-        throw new AppError('Unknown user id', 404);
-    }
-    await User.deleteOne({ _id: id });
-    await Cart.deleteOne({ userId: id });
+    const user = req.user;
+
+    await user.deleteOne();
+    await Cart.deleteOne({ userId: user._id });
     res.clearCookie('token');
     res.status(204).end();
 });
 
 exports.grabData = catchAsync(async (req, res) => {
-    const { id } = req.user;
-    const user = await User.findById({ _id: id });
-    if (!user) {
-        throw new AppError('Unknown user id', 404);
-    }
+    const user = req.user;
     const cart = await Cart.findOne({ userId: user._id }).populate(
         'products.productId'
     );
