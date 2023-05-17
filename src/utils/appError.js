@@ -6,6 +6,6 @@ function AppError(message, statusCode) {
     Error.captureStackTrace(this, this.constructor);
 }
 
-Object.setPrototypeOf(AppError, Error);
+Object.setPrototypeOf(AppError.prototype, Error.prototype);
 
 module.exports = AppError;

@@ -1,7 +1,16 @@
-module.exports = catchAsync = (fn) => {
-    return (req, res, next) => {
-        fn(req, res, next).catch((error) =>
-            res.status(error.statusCode ?? 400).json({ message: error.isOperational ? error.message : "Something went wrong" })
-        );
+const { log } = require('mercedlogger');
+
+module.exports = catchAsync = fn => {
+    return async (req, res, next) => {
+        try {
+            await fn(req, res, next);
+        } catch (error) {
+            log.red('SERVER STATUS', error);
+            res.status(error.statusCode ?? 500).json({
+                message: error.isOperational
+                    ? error.message
+                    : 'Something went wrong',
+            });
+        }
     };
 };

@@ -19,7 +19,7 @@ const checkFieldsPresence = (...fields) => {
     }
 };
 
-const checkIfFieldsLength = (...fields) => {
+const checkFieldsLength = (...fields) => {
     const isOk = fields.every(field => field.length >= 5);
     if (!isOk) {
         throw new AppError(
@@ -42,7 +42,7 @@ exports.signup = catchAsync(async (req, res) => {
     const { name, surname, email, password, passwordConfirm } = req.body;
 
     checkFieldsPresence(name, surname, email, password, passwordConfirm);
-    checkIfFieldsLength(name, surname, email, password, passwordConfirm);
+    checkFieldsLength(name, surname, email, password, passwordConfirm);
     checkPassword(password, passwordConfirm);
 
     const user = await User.create({
@@ -59,7 +59,7 @@ exports.login = catchAsync(async (req, res) => {
     const { email, password } = req.body;
 
     checkFieldsPresence(email, password);
-    checkIfFieldsLength(email, password);
+    checkFieldsLength(email, password);
 
     const user = await User.findOne({ email }).select('+password -__v');
     if (!user || !(await user.checkPassword(password, user.password))) {
@@ -84,7 +84,7 @@ exports.updatePassword = catchAsync(async (req, res) => {
     const { password, newPassword, newPasswordConfirm } = req.body;
 
     checkFieldsPresence(password, newPassword, newPasswordConfirm);
-    checkIfFieldsLength(password, newPassword, newPasswordConfirm);
+    checkFieldsLength(password, newPassword, newPasswordConfirm);
 
     const user = await User.findById(id).select('+password -__v');
     if (!user) {
@@ -101,6 +101,21 @@ exports.updatePassword = catchAsync(async (req, res) => {
     return res
         .status(200)
         .json({ message: 'Password was updated successfully' });
+});
+
+exports.forgetPassword = catchAsync(async (req, res) => {
+    const { email } = req.body;
+    checkFieldsPresence(email);
+    checkFieldsLength(email);
+
+    const user = await User.findOne({ email });
+    if (!user) {
+        throw new AppError('There is no user with such email', 404);
+    }
+
+    res.status(200).json({
+        message: 'Your reset token was sent on your email',
+    });
 });
 
 exports.logout = catchAsync((req, res) => {
