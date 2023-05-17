@@ -1,17 +1,19 @@
-const AppError = require("../utils/appError");
-const catchAsync = require("../utils/catchAsync");
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
 
-const Cart = require("../models/cart.model");
+const Cart = require('../models/cart.model');
 
 exports.addToCart = catchAsync(async (req, res) => {
     const { productId } = req.params;
-    const id = req.user.id;
+    const { id } = req.user;
     const { quantity } = req.body;
     const cart = await Cart.findOne({ userId: id });
     if (!cart) {
-        throw new AppError("You are not logged in", 404);
+        throw new AppError('You are not logged in', 404);
     }
-    const index = cart.products?.findIndex((product) => product.productId.equals(productId));
+    const index = cart.products?.findIndex(product =>
+        product.productId.equals(productId)
+    );
     if (index === undefined || index === -1) {
         cart.products.push({
             productId,
@@ -23,19 +25,21 @@ exports.addToCart = catchAsync(async (req, res) => {
 
     await cart.save();
 
-    res.status(201).json({ message: "Product was successfully added to cart" });
+    res.status(201).json({ message: 'Product was successfully added to cart' });
 });
 
 exports.removeFromCart = catchAsync(async (req, res) => {
     const { productId } = req.params;
-    const id = req.user.id;
+    const { id } = req.user;
     const cart = await Cart.findOne({ userId: id });
     if (!cart) {
-        throw new AppError("You are not logged in", 404);
+        throw new AppError('You are not logged in', 404);
     }
-    const index = cart.products?.findIndex((product) => product.productId.equals(productId));
+    const index = cart.products?.findIndex(product =>
+        product.productId.equals(productId)
+    );
     if (index === undefined || index === -1) {
-        throw new AppError("There is no such product in your cart", 404);
+        throw new AppError('There is no such product in your cart', 404);
     } else {
         const quantity = cart.products[index].quantity;
         if (quantity === 1) {
@@ -45,19 +49,20 @@ exports.removeFromCart = catchAsync(async (req, res) => {
         }
     }
     await cart.save();
-    res.status(204).json({ message: "Product was successfully deleted from cart" });
+    res.status(204).json({
+        message: 'Product was successfully deleted from cart',
+    });
 });
 
 exports.clearCart = catchAsync(async (req, res) => {
-    //TODO:
-    const id = req.user.id;
+    const { id } = req.user;
     const cart = await Cart.findOne({ userId: id });
     if (!cart) {
-        throw new AppError("You are not logged in", 404);
+        throw new AppError('You are not logged in', 404);
     }
     cart.products = [];
 
     await cart.save();
 
-    res.status(204).json({ message: "Cart was cleared successfully" });
+    res.status(204).json({ message: 'Cart was cleared successfully' });
 });

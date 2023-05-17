@@ -10,7 +10,7 @@ const sendEmail = require('../utils/email');
 
 const catchAsync = require('../utils/catchAsync');
 
-const { JWT_SECRET, JWT_EXPIRES_IN, BCRYPT_SALT } = process.env;
+const { JWT_SECRET, JWT_EXPIRES_IN, BCRYPT_SALT, PORT, NODE_ENV } = process.env;
 
 const signToken = id => {
     return jwt.sign({ id }, JWT_SECRET, {
@@ -35,7 +35,7 @@ const checkFieldsLength = (...fields) => {
     }
 };
 
-const checkPassword = (password1, password2) => {
+const comparePassword = (password1, password2) => {
     if (password1 !== password2) {
         throw new AppError(
             'Passwords are not the same. Please provide correct passwords',
@@ -62,7 +62,7 @@ exports.signup = catchAsync(async (req, res) => {
 
     checkFieldsPresence(name, surname, email, password, passwordConfirm);
     checkFieldsLength(name, surname, email, password, passwordConfirm);
-    checkPassword(password, passwordConfirm);
+    comparePassword(password, passwordConfirm);
 
     const user = await User.create({
         name,
@@ -81,7 +81,7 @@ exports.login = catchAsync(async (req, res) => {
     checkFieldsLength(email, password);
 
     const user = await User.findOne({ email }).select('+password -__v');
-    if (!user || !(await user.checkPassword(password, user.password))) {
+    if (!user || !(await user.comparePassword(password, user.password))) {
         throw new AppError('Incorrect email or password', 400);
     }
     user.password = undefined;
@@ -109,10 +109,10 @@ exports.updatePassword = catchAsync(async (req, res) => {
     if (!user) {
         throw new AppError('User with such id was not found', 404);
     }
-    if (!(await user.checkPassword(password, user.password))) {
+    if (!(await user.comparePassword(password, user.password))) {
         throw new AppError('Incorrect password', 401);
     }
-    checkPassword(newPassword, newPasswordConfirm);
+    comparePassword(newPassword, newPasswordConfirm);
 
     user.password = newPassword;
     await user.save();
@@ -133,11 +133,43 @@ exports.forgetPassword = catchAsync(async (req, res) => {
     }
 
     await deleteResetTokenIfExist(user._id);
-    const token = await createResetToken();
-    await sendEmail('Reset token', user.email, token);
+    const hash = await createResetToken();
+    const token = encodeURI(hash);
+    await Token.create({ userId: user._id, token });
+    const encodedToken = `${req.protocol}://${req.hostname}:${
+        NODE_ENV === 'development' ? PORT : ''
+    }${req.baseUrl}/reset-password/${token}`;
+    await sendEmail('Reset token', user.email, encodedToken);
     res.status(200).json({
         message: 'Your reset token was sent on your email',
     });
+});
+
+exports.resetPassword = catchAsync(async (req, res) => {
+    const { token } = req.params;
+    const { newPassword, newPasswordConfirm } = req.body;
+
+    const dbToken = await Token.findOne({ token });
+
+    if (!dbToken) {
+        throw new AppError('Token is invalid or has expired', 400);
+    }
+    comparePassword(newPassword, newPasswordConfirm);
+
+    const user = await User.findById(dbToken.userId).select('+password');
+
+    if (await user.checkPassword(newPassword, user.password)) {
+        throw new AppError(
+            "New password can't be the same as the previous one",
+            400
+        );
+    }
+    user.password = newPassword;
+
+    await user.save();
+    await dbToken.deleteOne();
+
+    res.status(200).json({ message: 'Password was changed successfully' });
 });
 
 exports.logout = catchAsync((req, res) => {
