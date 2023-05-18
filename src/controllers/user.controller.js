@@ -57,6 +57,17 @@ const createResetToken = async () => {
     return hash;
 };
 
+const sendResponseWithNewToken = (res, statusCode, data, userId) => {
+    const token = signToken(userId);
+    res.cookie('token', token, {
+        expires: new Date(
+            Date.now() +
+                parseInt(process.env.JWT_EXPIRES_IN) * 24 * 60 * 60 * 1000
+        ),
+    });
+    res.status(statusCode).json(data);
+};
+
 exports.signup = catchAsync(async (req, res) => {
     const { name, surname, email, password, passwordConfirm } = req.body;
 
@@ -85,17 +96,18 @@ exports.login = catchAsync(async (req, res) => {
         throw new AppError('Incorrect email or password', 400);
     }
     user.password = undefined;
-    res.cookie('token', signToken(user._id), {
-        expires: new Date(
-            Date.now() +
-                parseInt(process.env.JWT_EXPIRES_IN) * 24 * 60 * 60 * 1000
-        ),
-    });
+
     const cart = await Cart.findOne({ userId: user._id }).select('-__v');
-    return res.status(200).json({
-        message: 'You was sign in successfully',
-        data: { user, cart },
-    });
+
+    sendResponseWithNewToken(
+        res,
+        200,
+        {
+            message: 'You was sign in successfully',
+            data: { user, cart },
+        },
+        user._id
+    );
 });
 
 exports.updatePassword = catchAsync(async (req, res) => {
@@ -105,17 +117,21 @@ exports.updatePassword = catchAsync(async (req, res) => {
     checkFieldsPresence(password, newPassword, newPasswordConfirm);
     checkFieldsLength(password, newPassword, newPasswordConfirm);
 
-    if (!(await user.comparePassword(password, user.password))) {
+    if (!(await user.checkPassword(password, user.password))) {
         throw new AppError('Incorrect password', 401);
     }
+
     comparePassword(newPassword, newPasswordConfirm);
 
     user.password = newPassword;
     await user.save();
 
-    return res
-        .status(200)
-        .json({ message: 'Password was updated successfully' });
+    sendResponseWithNewToken(
+        res,
+        200,
+        { message: 'Password was updated successfully' },
+        user._id
+    );
 });
 
 exports.forgetPassword = catchAsync(async (req, res) => {

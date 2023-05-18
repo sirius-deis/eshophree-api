@@ -14,12 +14,23 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
         throw new AppError('Token verification failed', 401);
     }
 
-    req.user = await User.findById(payload.id);
+    const user = await User.findById(payload.id).select(
+        '+password +passwordChangedAt'
+    );
+
+    if (new Date(payload.iat * 1000) > user.passwordChangedAt) {
+        throw new AppError(
+            'User recently changed password! Please log in again.',
+            401
+        );
+    }
+
+    req.user = user;
     next();
 });
 
-exports.restrictTo = catchAsync(requiredRole => {
-    return (req, res, next) => {
+exports.restrictTo = requiredRole => {
+    return catchAsync((req, res, next) => {
         const user = req.user;
 
         if (user.role !== requiredRole) {
@@ -27,5 +38,5 @@ exports.restrictTo = catchAsync(requiredRole => {
         }
 
         next();
-    };
-});
+    });
+};
