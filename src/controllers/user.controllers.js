@@ -9,6 +9,7 @@ const Token = require('../models/token.model');
 const sendEmail = require('../utils/email');
 
 const catchAsync = require('../utils/catchAsync');
+const checkFieldsPresence = require('../utils/utils');
 
 const { JWT_SECRET, JWT_EXPIRES_IN, BCRYPT_SALT, PORT, NODE_ENV } = process.env;
 
@@ -16,13 +17,6 @@ const signToken = id => {
     return jwt.sign({ id }, JWT_SECRET, {
         expiresIn: JWT_EXPIRES_IN,
     });
-};
-
-const checkFieldsPresence = (...fields) => {
-    const isOk = fields.every(field => field);
-    if (!isOk) {
-        throw new AppError('Please provide all fields with correct data', 400);
-    }
 };
 
 const checkFieldsLength = (...fields) => {
