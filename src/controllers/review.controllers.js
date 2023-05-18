@@ -27,5 +27,26 @@ exports.addReview = catchAsync(async (req, res) => {
         comment: review,
     });
 
-    res.status(201).json({ message: 'Your review was added successfully' });
+    res.status(201).json({ message: 'Your review was added successfully.' });
+});
+
+exports.deleteReview = catchAsync(async (req, res) => {
+    const user = req.user;
+    const { reviewId } = req.body;
+
+    const review = await Review.findById(reviewId);
+    if (!review) {
+        throw new AppError('There is no review with such id', 404);
+    }
+
+    if (review.userId !== user._id) {
+        throw new AppError(
+            "You don't have enough rights to delete this review.",
+            402
+        );
+    }
+
+    await review.deleteOne();
+
+    res.status(204).json({ message: 'Your review was deleted successfully.' });
 });
