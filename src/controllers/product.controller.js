@@ -12,7 +12,10 @@ const checkIfProductsListIsNotBlank = (products, message) => {
 
 exports.getAllProducts = catchAsync(async (req, res) => {
     const { skip = 0, limit = 10 } = req.query;
-    const products = await Product.find().skip(skip).limit(limit);
+    const products = await Product.find()
+        .skip(skip)
+        .limit(limit)
+        .populate('discount');
     checkIfProductsListIsNotBlank(products, 'There are no products left');
 
     res.status(200).json({ message: 'Products were found', data: products });
@@ -24,7 +27,8 @@ exports.getAllProductsWithinCategory = catchAsync(async (req, res) => {
 
     const products = await Product.find({ category: categoryName })
         .skip(skip)
-        .limit(limit);
+        .limit(limit)
+        .populate('discount');
     checkIfProductsListIsNotBlank(
         products,
         'There are no products with such category left'

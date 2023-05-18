@@ -1,9 +1,10 @@
 const jwt = require('jsonwebtoken');
 
+const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const User = require('../models/user.model');
 
-exports.isLoggedIn = async (req, res, next) => {
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
     const { token } = req.cookies;
     if (!token) {
         throw new AppError('Sign in before trying to access this route', 401);
@@ -15,9 +16,9 @@ exports.isLoggedIn = async (req, res, next) => {
 
     req.user = await User.findById(payload.id);
     next();
-};
+});
 
-exports.restrictTo = requiredRole => {
+exports.restrictTo = catchAsync(requiredRole => {
     return (req, res, next) => {
         const user = req.user;
 
@@ -27,4 +28,4 @@ exports.restrictTo = requiredRole => {
 
         next();
     };
-};
+});
