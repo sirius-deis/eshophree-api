@@ -17,6 +17,7 @@ const reviewRouter = require('./routes/review.routes');
 
 const catchAsync = require('./utils/catchAsync');
 const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controllers/error.controllers');
 
 const app = express();
 
@@ -61,12 +62,11 @@ app.use('/api/v1/products', productRouter);
 app.use('/api/v1/carts', cartRouter);
 app.use('/api/v1/reviews', reviewRouter);
 
-app.all(
-    '*',
-    catchAsync(req => {
-        throw new AppError(`Can't find ${req.originalUrl} on this server`, 404);
-    })
-);
+app.all('*', (req, res, next) => {
+    next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
+});
+
+app.use(globalErrorHandler);
 
 connect();
 

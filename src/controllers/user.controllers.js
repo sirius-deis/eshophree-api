@@ -9,7 +9,7 @@ const Token = require('../models/token.model');
 const sendEmail = require('../utils/email');
 
 const catchAsync = require('../utils/catchAsync');
-const checkFieldsPresence = require('../utils/utils');
+const utils = require('../utils/utils');
 
 const { JWT_SECRET, JWT_EXPIRES_IN, BCRYPT_SALT, PORT, NODE_ENV } = process.env;
 
@@ -19,21 +19,22 @@ const signToken = id => {
     });
 };
 
-const checkFieldsLength = (...fields) => {
+const checkFieldsLength = (next, ...fields) => {
     const isOk = fields.every(field => field.length >= 5);
     if (!isOk) {
-        throw new AppError(
-            'All fields must be at least 5 characters long',
-            400
+        return next(
+            new AppError('All fields must be at least 5 characters long', 400)
         );
     }
 };
 
-const comparePassword = (password1, password2) => {
+const comparePassword = (next, password1, password2) => {
     if (password1 !== password2) {
-        throw new AppError(
-            'Passwords are not the same. Please provide correct passwords',
-            400
+        return next(
+            new AppError(
+                'Passwords are not the same. Please provide correct passwords',
+                400
+            )
         );
     }
 };
@@ -62,12 +63,19 @@ const sendResponseWithNewToken = (res, statusCode, data, userId) => {
     res.status(statusCode).json(data);
 };
 
-exports.signup = catchAsync(async (req, res) => {
+exports.signup = catchAsync(async (req, res, next) => {
     const { name, surname, email, password, passwordConfirm } = req.body;
 
-    checkFieldsPresence(name, surname, email, password, passwordConfirm);
-    checkFieldsLength(name, surname, email, password, passwordConfirm);
-    comparePassword(password, passwordConfirm);
+    utils.checkFieldsPresence(
+        next,
+        name,
+        surname,
+        email,
+        password,
+        passwordConfirm
+    );
+    checkFieldsLength(next, name, surname, email, password, passwordConfirm);
+    comparePassword(next, password, passwordConfirm);
 
     const user = await User.create({
         name,
@@ -79,15 +87,15 @@ exports.signup = catchAsync(async (req, res) => {
     res.status(201).json({ message: 'Account was successfully created' });
 });
 
-exports.login = catchAsync(async (req, res) => {
+exports.login = catchAsync(async (req, res, next) => {
     const { email, password } = req.body;
 
-    checkFieldsPresence(email, password);
-    checkFieldsLength(email, password);
+    utils.checkFieldsPresence(next, email, password);
+    checkFieldsLength(next, email, password);
 
     const user = await User.findOne({ email }).select('+password -__v');
     if (!user || !(await user.checkPassword(password, user.password))) {
-        throw new AppError('Incorrect email or password', 400);
+        return next(new AppError('Incorrect email or password', 400));
     }
     user.password = undefined;
 
@@ -104,18 +112,18 @@ exports.login = catchAsync(async (req, res) => {
     );
 });
 
-exports.updatePassword = catchAsync(async (req, res) => {
+exports.updatePassword = catchAsync(async (req, res, next) => {
     const user = req.user;
     const { password, newPassword, newPasswordConfirm } = req.body;
 
-    checkFieldsPresence(password, newPassword, newPasswordConfirm);
-    checkFieldsLength(password, newPassword, newPasswordConfirm);
+    utils.checkFieldsPresence(next, password, newPassword, newPasswordConfirm);
+    checkFieldsLength(next, password, newPassword, newPasswordConfirm);
 
     if (!(await user.checkPassword(password, user.password))) {
         throw new AppError('Incorrect password', 401);
     }
 
-    comparePassword(newPassword, newPasswordConfirm);
+    comparePassword(next, newPassword, newPasswordConfirm);
 
     user.password = newPassword;
     await user.save();
@@ -128,14 +136,14 @@ exports.updatePassword = catchAsync(async (req, res) => {
     );
 });
 
-exports.forgetPassword = catchAsync(async (req, res) => {
+exports.forgetPassword = catchAsync(async (req, res, next) => {
     const { email } = req.body;
-    checkFieldsPresence(email);
-    checkFieldsLength(email);
+    utils.checkFieldsPresence(next, email);
+    checkFieldsLength(next, email);
 
     const user = await User.findOne({ email });
     if (!user) {
-        throw new AppError('There is no user with such email', 404);
+        return next(new AppError('There is no user with such email', 404));
     }
 
     await deleteResetTokenIfExist(user._id);
@@ -158,16 +166,18 @@ exports.resetPassword = catchAsync(async (req, res) => {
     const dbToken = await Token.findOne({ token });
 
     if (!dbToken) {
-        throw new AppError('Token is invalid or has expired', 400);
+        return next(new AppError('Token is invalid or has expired', 400));
     }
-    comparePassword(newPassword, newPasswordConfirm);
+    comparePassword(next, newPassword, newPasswordConfirm);
 
     const user = await User.findById(dbToken.userId).select('+password');
 
     if (await user.checkPassword(newPassword, user.password)) {
-        throw new AppError(
-            "New password can't be the same as the previous one",
-            400
+        return next(
+            new AppError(
+                "New password can't be the same as the previous one",
+                400
+            )
         );
     }
     user.password = newPassword;
