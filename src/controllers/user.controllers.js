@@ -3,9 +3,9 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 const AppError = require('../utils/appError');
-const User = require('../models/user.model');
-const Cart = require('../models/cart.model');
-const Token = require('../models/token.model');
+const User = require('../models/user.models');
+const Cart = require('../models/cart.models');
+const Token = require('../models/token.models');
 const sendEmail = require('../utils/email');
 
 const catchAsync = require('../utils/catchAsync');
@@ -173,7 +173,7 @@ exports.logout = (req, res) => {
     res.status(202).json({ message: 'Successfully' });
 };
 
-exports.delete = catchAsync(async (req, res) => {
+exports.deleteAccount = catchAsync(async (req, res) => {
     const user = req.user;
 
     await user.deleteOne();
@@ -182,7 +182,7 @@ exports.delete = catchAsync(async (req, res) => {
     res.status(204).end();
 });
 
-exports.grabData = catchAsync(async (req, res) => {
+exports.me = catchAsync(async (req, res) => {
     const user = req.user;
     const cart = await Cart.findOne({ userId: user._id }).populate(
         'products.productId'

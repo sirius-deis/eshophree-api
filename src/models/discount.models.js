@@ -1,17 +1,12 @@
 const mongoose = require('mongoose');
 
 const DiscountSchema = new mongoose.Schema({
-    productId: {
-        type: mongoose.SchemaTypes.ObjectId,
-        required: true,
-        ref: 'product',
-    },
-    amount: {
+    percent: {
         type: Number,
         min: 0,
         max: 100,
     },
-    addedAt: {
+    createdAt: {
         type: Date,
         default: Date.now(),
         required: true,

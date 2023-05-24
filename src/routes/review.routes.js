@@ -1,17 +1,21 @@
 const express = require('express');
-const { param } = require('express-validator');
 const auth = require('../middlewares/auth.middlewares');
-const reviewController = require('../controllers/review.controllers');
+const {
+    getReviews,
+    addReview,
+    updateReview,
+    deleteReview,
+} = require('../controllers/review.controllers');
 const validator = require('../middlewares/validation.middlwares');
-const { isIntWithMin, isNthLength } = require('../utils/validator');
+const { isIntWithMin, isNthLength, isMongoId } = require('../utils/validator');
 
 const reviewRouter = express.Router({ mergeParams: true });
 
 reviewRouter.use(auth.isLoggedIn);
 
-reviewRouter.use(param('productId').isMongoId());
+reviewRouter.use(isMongoId('productId'));
 
-reviewRouter.route('/').get(reviewController.getReviews);
+reviewRouter.route('/').get(getReviews);
 
 reviewRouter
     .route('/')
@@ -19,12 +23,10 @@ reviewRouter
         isIntWithMin('rating', 1, 5),
         isNthLength('comment', 4, 256),
         validator,
-        reviewController.addReview
+        addReview
     );
 
-reviewRouter
-    .route('/:reviewId')
-    .delete(validator, reviewController.deleteReview);
+reviewRouter.route('/:reviewId').delete(validator, deleteReview);
 
 reviewRouter
     .route('/:reviewId')
@@ -32,7 +34,7 @@ reviewRouter
         isIntWithMin('rating', 1, 5),
         isNthLength('comment', 4, 256),
         validator,
-        reviewController.updateReview
+        updateReview
     );
 
 module.exports = reviewRouter;

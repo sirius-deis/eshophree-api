@@ -1,9 +1,21 @@
 const express = require('express');
 const { query } = require('express-validator');
-const productController = require('../controllers/product.controllers');
+const {
+    getAllProducts,
+    addProduct,
+    getProductById,
+    removeProduct,
+    getAllProductsWithinCategory,
+} = require('../controllers/product.controllers');
 const reviewRouter = require('./review.routes');
+const discountRouter = require('./discount.routes');
 const auth = require('../middlewares/auth.middlewares');
-const { isNthLength, isPrice, isIntWithMin } = require('../utils/validator');
+const {
+    isNthLength,
+    isPrice,
+    isIntWithMin,
+    isMongoId,
+} = require('../utils/validator');
 const validator = require('../middlewares/validation.middlwares');
 
 const productRouter = express.Router();
@@ -13,7 +25,7 @@ const limitQuery = query('skip').isInt({ gt: 0 });
 
 productRouter
     .route('/')
-    .get(skipQuery, limitQuery, validator, productController.getAllProducts)
+    .get(skipQuery, limitQuery, validator, getAllProducts)
     .post(
         isNthLength('name', 5),
         isNthLength('text', 10),
@@ -25,23 +37,19 @@ productRouter
         isNthLength('addition', 10, 256),
         validator,
         auth.restrictTo('admin'),
-        productController.addProduct
+        addProduct
     );
 
 productRouter
     .route('/:productId')
-    .get(productController.getProductById)
-    .delete(auth.restrictTo('admin'), productController.removeProduct);
+    .get(isMongoId('productId'), getProductById)
+    .delete(auth.restrictTo('admin'), isMongoId('productId'), removeProduct);
 
 productRouter
     .route('/category/:categoryName')
-    .get(
-        skipQuery,
-        limitQuery,
-        validator,
-        productController.getAllProductsWithinCategory
-    );
+    .get(skipQuery, limitQuery, validator, getAllProductsWithinCategory);
 
 productRouter.use('/:productId/reviews', reviewRouter);
+productRouter.use('/:productId/discounts', discountRouter);
 
 module.exports = productRouter;

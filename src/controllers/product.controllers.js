@@ -1,7 +1,8 @@
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
-const Product = require('../models/product.model');
+const Product = require('../models/product.models');
+const Discount = require('../models/discount.models');
 
 const checkIfProductsListIsNotBlank = (next, products, message) => {
     if (products.length < 1) {

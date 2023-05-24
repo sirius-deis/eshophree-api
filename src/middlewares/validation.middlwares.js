@@ -6,7 +6,7 @@ module.exports = (req, res, next) => {
     if (errors.length) {
         const errorsArr = errors.map(
             error =>
-                `${error.msg}. Field ${error.path} with value doesn\'t pass validation. Please provide correct data`
+                `${error.msg}. Field '${error.path}' with value '${error.value}' doesn\'t pass validation. Please provide correct data`
         );
         return next(new AppError(errorsArr, 400));
     }

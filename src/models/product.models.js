@@ -3,33 +3,33 @@ const mongoose = require('mongoose');
 const productSchema = mongoose.Schema({
     name: {
         type: String,
-        require: [true, "This field can't be blank. Provide a name"],
+        required: [true, "This field can't be blank. Provide a name"],
     },
     text: {
         type: String,
-        require: [true, "This field can't be blank. Provide a text"],
+        required: [true, "This field can't be blank. Provide a text"],
     },
     category: {
         type: String,
-        require: [true, "This field can't be blank. Provide a category"],
+        required: [true, "This field can't be blank. Provide a category"],
     },
     brand: {
         type: String,
     },
     price: {
         type: Number,
-        require: [true, "This field can't be blank. Provide a price"],
+        required: [true, "This field can't be blank. Provide a price"],
     },
     stock: {
         type: Number,
-        require: [
+        required: [
             true,
             "This field can't be blank. Provide amount of this product",
         ],
     },
     desc: {
         type: String,
-        require: [
+        required: [
             true,
             "This field can't be blank. Provide description for this product",
         ],
@@ -51,7 +51,7 @@ const productSchema = mongoose.Schema({
     },
     addition: {
         type: String,
-        require: [
+        required: [
             true,
             "This field can't be blank. Provide additional details for this product",
         ],
@@ -64,6 +64,7 @@ const productSchema = mongoose.Schema({
     },
     discountId: {
         type: mongoose.SchemaTypes.ObjectId,
+        required: true,
     },
 });
 

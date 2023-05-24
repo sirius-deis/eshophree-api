@@ -1,5 +1,14 @@
 const express = require('express');
-const userController = require('../controllers/user.controllers');
+const {
+    signup,
+    login,
+    resetPassword,
+    forgetPassword,
+    updatePassword,
+    logout,
+    me,
+    deleteAccount,
+} = require('../controllers/user.controllers');
 const auth = require('../middlewares/auth.middlewares');
 const validator = require('../middlewares/validation.middlwares');
 const { isEmail, isNthLength } = require('../utils/validator');
@@ -14,41 +23,30 @@ userRouter.post(
     isNthLength('password'),
     isNthLength('passwordConfirm'),
     validator,
-    userController.signup
+    signup
 );
-userRouter.post(
-    '/login',
-    isEmail(),
-    isNthLength('password'),
-    validator,
-    userController.login
-);
+userRouter.post('/login', isEmail(), isNthLength('password'), validator, login);
 userRouter.post(
     '/reset-password/:token',
     isNthLength('newPassword'),
     isNthLength('newPasswordConfirm'),
     validator,
-    userController.resetPassword
+    resetPassword
 );
 
 userRouter.use(auth.isLoggedIn);
 
-userRouter.post(
-    '/forget-password',
-    isEmail(),
-    validator,
-    userController.forgetPassword
-);
+userRouter.post('/forget-password', isEmail(), validator, forgetPassword);
 userRouter.post(
     '/update-password',
     isNthLength('password'),
     isNthLength('newPassword'),
     isNthLength('newPasswordConfirm'),
     validator,
-    userController.updatePassword
+    updatePassword
 );
-userRouter.get('/logout', userController.logout);
-userRouter.get('/grab', userController.grabData);
-userRouter.delete('/delete', userController.delete);
+userRouter.get('/logout', logout);
+userRouter.get('/grab', me);
+userRouter.delete('/delete', deleteAccount);
 
 module.exports = userRouter;

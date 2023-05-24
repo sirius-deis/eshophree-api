@@ -1,8 +1,13 @@
 const express = require('express');
-const { body, param } = require('express-validator');
-const cartController = require('../controllers/cart.controllers');
+const { body } = require('express-validator');
+const {
+    addToCart,
+    clearCart,
+    removeFromCart,
+} = require('../controllers/cart.controllers');
 const auth = require('../middlewares/auth.middlewares');
 const validator = require('../middlewares/validation.middlwares');
+const { isMongoId } = require('../utils/validator');
 
 const cartRouter = express.Router();
 
@@ -10,17 +15,17 @@ cartRouter.use(auth.isLoggedIn);
 
 cartRouter.post(
     '/:productId',
-    param('productId').isMongoId(),
+    isMongoId('productId'),
     body('quantity').isInt({ gt: 1 }),
     validator,
-    cartController.addToCart
+    addToCart
 );
-cartRouter.delete('/clear', cartController.clearCart);
+cartRouter.delete('/clear', clearCart);
 cartRouter.delete(
     '/:productId',
-    param('productId').isMongoId(),
+    isMongoId('productId'),
     validator,
-    cartController.removeFromCart
+    removeFromCart
 );
 
 module.exports = cartRouter;
