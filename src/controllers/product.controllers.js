@@ -41,7 +41,7 @@ exports.getAllProductsWithinCategory = catchAsync(async (req, res, next) => {
 });
 
 exports.getProductById = catchAsync(async (req, res, next) => {
-    const productId = req.params.productId;
+    const { productId } = req.params;
     const product = await Product.findById(productId);
     if (!product) {
         return next(
@@ -78,7 +78,7 @@ exports.addProduct = catchAsync(async (req, res) => {
         addition,
     });
 
-    res.status(201).json({ message: 'product was added successfully' });
+    res.status(201).json({ message: 'Product was added successfully' });
 });
 
 exports.removeProduct = catchAsync(async (req, res, next) => {

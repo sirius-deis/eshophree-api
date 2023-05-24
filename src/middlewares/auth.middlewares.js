@@ -30,7 +30,7 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
 });
 
 exports.restrictTo = requiredRole => {
-    return catchAsync((req, res, next) => {
+    return (req, res, next) => {
         const user = req.user;
 
         if (user.role !== requiredRole) {
@@ -38,5 +38,5 @@ exports.restrictTo = requiredRole => {
         }
 
         next();
-    });
+    };
 };

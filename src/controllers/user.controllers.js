@@ -9,7 +9,6 @@ const Token = require('../models/token.model');
 const sendEmail = require('../utils/email');
 
 const catchAsync = require('../utils/catchAsync');
-const utils = require('../utils/utils');
 
 const { JWT_SECRET, JWT_EXPIRES_IN, BCRYPT_SALT, PORT, NODE_ENV } = process.env;
 
@@ -19,24 +18,16 @@ const signToken = id => {
     });
 };
 
-const checkFieldsLength = (next, ...fields) => {
-    const isOk = fields.every(field => field.length >= 5);
-    if (!isOk) {
-        return next(
-            new AppError('All fields must be at least 5 characters long', 400)
-        );
-    }
-};
-
-const comparePassword = (next, password1, password2) => {
+const ArePasswordsTheSame = (next, password1, password2) => {
     if (password1 !== password2) {
-        return next(
+        next(
             new AppError(
                 'Passwords are not the same. Please provide correct passwords',
                 400
             )
         );
     }
+    return true;
 };
 
 const deleteResetTokenIfExist = async userId => {
@@ -66,16 +57,9 @@ const sendResponseWithNewToken = (res, statusCode, data, userId) => {
 exports.signup = catchAsync(async (req, res, next) => {
     const { name, surname, email, password, passwordConfirm } = req.body;
 
-    utils.checkFieldsPresence(
-        next,
-        name,
-        surname,
-        email,
-        password,
-        passwordConfirm
-    );
-    checkFieldsLength(next, name, surname, email, password, passwordConfirm);
-    comparePassword(next, password, passwordConfirm);
+    if (!ArePasswordsTheSame(next, password, passwordConfirm)) {
+        return;
+    }
 
     const user = await User.create({
         name,
@@ -89,9 +73,6 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res, next) => {
     const { email, password } = req.body;
-
-    utils.checkFieldsPresence(next, email, password);
-    checkFieldsLength(next, email, password);
 
     const user = await User.findOne({ email }).select('+password -__v');
     if (!user || !(await user.checkPassword(password, user.password))) {
@@ -116,14 +97,13 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     const user = req.user;
     const { password, newPassword, newPasswordConfirm } = req.body;
 
-    utils.checkFieldsPresence(next, password, newPassword, newPasswordConfirm);
-    checkFieldsLength(next, password, newPassword, newPasswordConfirm);
-
     if (!(await user.checkPassword(password, user.password))) {
-        throw new AppError('Incorrect password', 401);
+        return next(new AppError('Incorrect password', 401));
     }
 
-    comparePassword(next, newPassword, newPasswordConfirm);
+    if (!ArePasswordsTheSame(next, newPassword, newPasswordConfirm)) {
+        return;
+    }
 
     user.password = newPassword;
     await user.save();
@@ -138,8 +118,6 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
 exports.forgetPassword = catchAsync(async (req, res, next) => {
     const { email } = req.body;
-    utils.checkFieldsPresence(next, email);
-    checkFieldsLength(next, email);
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -150,8 +128,8 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     const hash = await createResetToken();
     const token = encodeURI(hash);
     await Token.create({ userId: user._id, token });
-    const encodedToken = `${req.protocol}://${req.hostname}:${
-        NODE_ENV === 'development' ? PORT : ''
+    const encodedToken = `${req.protocol}://${req.hostname}${
+        NODE_ENV === 'development' ? `:${PORT}` : ''
     }${req.baseUrl}/reset-password/${token}`;
     await sendEmail('Reset token', user.email, encodedToken);
     res.status(200).json({
@@ -168,7 +146,9 @@ exports.resetPassword = catchAsync(async (req, res) => {
     if (!dbToken) {
         return next(new AppError('Token is invalid or has expired', 400));
     }
-    comparePassword(next, newPassword, newPasswordConfirm);
+    if (!ArePasswordsTheSame(next, newPassword, newPasswordConfirm)) {
+        return;
+    }
 
     const user = await User.findById(dbToken.userId).select('+password');
 
@@ -188,10 +168,10 @@ exports.resetPassword = catchAsync(async (req, res) => {
     res.status(200).json({ message: 'Password was changed successfully' });
 });
 
-exports.logout = catchAsync((req, res) => {
+exports.logout = (req, res) => {
     res.clearCookie('token');
     res.status(202).json({ message: 'Successfully' });
-});
+};
 
 exports.delete = catchAsync(async (req, res) => {
     const user = req.user;
@@ -207,6 +187,8 @@ exports.grabData = catchAsync(async (req, res) => {
     const cart = await Cart.findOne({ userId: user._id }).populate(
         'products.productId'
     );
+
+    user.password = undefined;
 
     return res.status(200).json({
         message: 'You was sign in successfully',

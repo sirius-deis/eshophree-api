@@ -3,11 +3,34 @@ const Review = require('../models/review.model');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
-const checkFieldsPresence = require('../utils/utils');
+const chooseReviewFields = fields => {
+    const map = {};
+    let isOnePresent = false;
+    for (const key in fields) {
+        if (fields[key]) {
+            map[key] = fields[key];
+            isOnePresent = true;
+        }
+    }
+    return isOnePresent && map;
+};
+
+exports.getReviews = catchAsync(async (req, res, next) => {
+    const { productId } = req.params;
+    const reviews = await Review.find({ productId });
+    if (reviews.length) {
+        return next(new AppError('There is no review on this product', 404));
+    }
+    res.status(200).json({
+        message: 'Review on selected product were found',
+        data: { reviews },
+    });
+});
 
 exports.addReview = catchAsync(async (req, res, next) => {
     const user = req.user;
-    const { productId, rating, review } = req.body;
+    const { productId } = req.params;
+    const { rating, comment } = req.body;
 
     const reviewEntity = await Review.findOne({ userId: user._id, productId });
 
@@ -20,22 +43,19 @@ exports.addReview = catchAsync(async (req, res, next) => {
         );
     }
 
-    checkFieldsPresence(next, rating, review);
-
     await Review.create({
         userId: user._id,
         productId,
         rating: +rating,
-        comment: review,
+        comment,
     });
 
     res.status(201).json({ message: 'Your review was added successfully.' });
 });
 
-//TODO: refactor
 exports.deleteReview = catchAsync(async (req, res, next) => {
     const user = req.user;
-    const { reviewId } = req.body;
+    const { reviewId } = req.params;
 
     const review = await Review.findById(reviewId);
     if (!review) {
@@ -56,10 +76,10 @@ exports.deleteReview = catchAsync(async (req, res, next) => {
     res.status(204).json({ message: 'Your review was deleted successfully.' });
 });
 
-//TODO: refactor
 exports.updateReview = catchAsync(async (req, res, next) => {
     const user = req.user;
-    const { reviewId } = req.body;
+    const { rating, comment } = req.body;
+    const { reviewId } = req.params;
 
     const review = await Review.findById(reviewId);
 
@@ -75,4 +95,17 @@ exports.updateReview = catchAsync(async (req, res, next) => {
             )
         );
     }
+
+    const fields = chooseReviewFields({ rating, comment });
+    if (!fields) {
+        return next(new AppError('Please change at lease one field', 400));
+    }
+
+    for (const name in fields) {
+        review[name] = fields[name];
+    }
+
+    await review.save();
+
+    res.status(200).json({ message: 'Your review was successfully updated' });
 });
