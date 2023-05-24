@@ -56,6 +56,10 @@ const productSchema = mongoose.Schema({
             "This field can't be blank. Provide additional details for this product",
         ],
     },
+    ratingQuantity: {
+        type: Number,
+        default: 0,
+    },
     ratingAverage: {
         type: Number,
         min: 1,
