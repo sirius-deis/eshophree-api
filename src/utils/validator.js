@@ -11,8 +11,8 @@ exports.isIntWithMin = (field, min) => body(field).isInt({ min });
 
 exports.isMongoId = field => param(field).isMongoId();
 
-exports.isArray = (field, isOptional) =>
-    query(field).optional(isOptional).isArray();
+exports.isArray = (field, isOptional = false, min = 1) =>
+    query(field).optional(isOptional).isArray({ min });
 
 exports.isGreaterThan = (field, isOptional, gt) =>
     query(field).optional(isOptional).isInt({ gt });

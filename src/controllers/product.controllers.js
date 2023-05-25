@@ -30,16 +30,10 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
     res.status(200).json({ message: 'Products were found', data: products });
 });
 
-exports.getProductById = catchAsync(async (req, res, next) => {
-    const { productId } = req.params;
-    const product = await Product.findById(productId);
-    if (!product) {
-        return next(
-            AppError(`Product with id: ${productId} wasn't found`, 200)
-        );
-    }
+exports.getProductById = (req, res, next) => {
+    const product = req.product;
     res.status(200).json({ message: 'Product was found', data: product });
-});
+};
 
 exports.addProduct = catchAsync(async (req, res) => {
     const {
@@ -72,16 +66,7 @@ exports.addProduct = catchAsync(async (req, res) => {
 });
 
 exports.removeProduct = catchAsync(async (req, res, next) => {
-    const { productId } = req.params;
-
-    const product = await Product.findById(productId);
-
-    if (!product) {
-        return next(
-            AppError(`Product with id: ${productId} wasn't found`, 404)
-        );
-    }
-
+    const product = req.product;
     await product.deleteOne();
 
     res.status(204).json({ message: 'Product was deleted successfully' });

@@ -1,14 +1,12 @@
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const Discount = require('../models/discount.models');
-const Product = require('../models/product.models');
 
 exports.addDiscount = catchAsync(async (req, res, next) => {
-    const { productId } = req.params;
     const { percent, till } = req.body;
     const discount = await Discount.create({ percent, till: new Date(till) });
 
-    const product = await Product.findById(productId);
+    const product = req.product;
 
     product.discountId = discount._id;
 
@@ -18,12 +16,7 @@ exports.addDiscount = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteDiscount = catchAsync(async (req, res, next) => {
-    const { productId } = req.params;
-    const product = await Product.findById(productId);
-
-    if (!product) {
-        return next(new AppError('There is no discount on such product', 404));
-    }
+    const product = req.product;
 
     await Discount.findByIdAndDelete(product.discountId);
 
@@ -31,13 +24,9 @@ exports.deleteDiscount = catchAsync(async (req, res, next) => {
 });
 
 exports.updateDiscount = catchAsync(async (req, res, next) => {
-    const { productId } = req.params;
     const { percent, till } = req.body;
 
-    const product = await Product.findById(productId);
-    if (!product) {
-        return next(new AppError('There is no discount on such product', 404));
-    }
+    const product = req.product;
     await Discount.findByIdAndUpdate(
         product.discountId,
         { till, percent },

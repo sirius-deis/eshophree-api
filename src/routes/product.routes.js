@@ -8,6 +8,8 @@ const {
 const reviewRouter = require('./review.routes');
 const discountRouter = require('./discount.routes');
 const auth = require('../middlewares/auth.middlewares');
+const validator = require('../middlewares/validation.middlwares');
+const { findProduct } = require('../middlewares/product.middlewares');
 const {
     isNthLength,
     isPrice,
@@ -16,7 +18,6 @@ const {
     isArray,
     isGreaterThan,
 } = require('../utils/validator');
-const validator = require('../middlewares/validation.middlwares');
 
 const productRouter = express.Router();
 
@@ -37,6 +38,8 @@ productRouter
         isPrice('price'),
         isIntWithMin('stock', 1),
         isNthLength('desc', 30, 256),
+        isArray('options'),
+        isArray('images'),
         isNthLength('addition', 10, 256),
         validator,
         auth.restrictTo('admin'),
@@ -45,8 +48,13 @@ productRouter
 
 productRouter
     .route('/:productId')
-    .get(isMongoId('productId'), getProductById)
-    .delete(auth.restrictTo('admin'), isMongoId('productId'), removeProduct);
+    .get(isMongoId('productId'), findProduct, getProductById)
+    .delete(
+        auth.restrictTo('admin'),
+        isMongoId('productId'),
+        findProduct,
+        removeProduct
+    );
 
 productRouter.use('/:productId/reviews', reviewRouter);
 productRouter.use('/:productId/discounts', discountRouter);

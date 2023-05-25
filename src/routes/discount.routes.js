@@ -7,6 +7,7 @@ const {
     updateDiscount,
 } = require('../controllers/discount.controllers');
 const { isLoggedIn, restrictTo } = require('../middlewares/auth.middlewares');
+const { findProduct } = require('../middlewares/product.middlewares');
 
 const discountRouter = express.Router({ mergeParams: true });
 
@@ -14,9 +15,9 @@ discountRouter.use(isLoggedIn);
 discountRouter.use(restrictTo('admin'));
 discountRouter.use(isMongoId('productId'));
 
-discountRouter.route('/').post(addDiscount);
+discountRouter.route('/').post(findProduct, addDiscount);
 
-discountRouter.route('/').delete(deleteDiscount);
-discountRouter.route('/').delete(updateDiscount);
+discountRouter.route('/').delete(findProduct, deleteDiscount);
+discountRouter.route('/').delete(findProduct, updateDiscount);
 
 module.exports = discountRouter;
