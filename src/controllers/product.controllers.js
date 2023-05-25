@@ -4,9 +4,9 @@ const AppError = require('../utils/appError');
 const Product = require('../models/product.models');
 const Discount = require('../models/discount.models');
 
-const checkIfProductsListIsNotBlank = (next, products, message) => {
+const checkIfProductsListIsNotBlank = (next, products, message, statusCode) => {
     if (products.length < 1) {
-        return next(new AppError(message, 404));
+        return next(new AppError(message, statusCode));
     }
 };
 
@@ -20,7 +20,12 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
         .skip(skip)
         .limit(limit)
         .populate('discount');
-    checkIfProductsListIsNotBlank(next, products, 'There are no products left');
+    checkIfProductsListIsNotBlank(
+        next,
+        products,
+        'There are no products left',
+        200
+    );
 
     res.status(200).json({ message: 'Products were found', data: products });
 });
@@ -30,7 +35,7 @@ exports.getProductById = catchAsync(async (req, res, next) => {
     const product = await Product.findById(productId);
     if (!product) {
         return next(
-            AppError(`Product with id: ${productId} wasn't found`, 404)
+            AppError(`Product with id: ${productId} wasn't found`, 200)
         );
     }
     res.status(200).json({ message: 'Product was found', data: product });
