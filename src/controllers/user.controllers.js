@@ -6,7 +6,7 @@ const AppError = require('../utils/appError');
 const User = require('../models/user.models');
 const Cart = require('../models/cart.models');
 const Token = require('../models/token.models');
-const sendEmail = require('../utils/email');
+const sendEmail = require('../api/email');
 
 const catchAsync = require('../utils/catchAsync');
 
@@ -131,13 +131,18 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     const encodedToken = `${req.protocol}://${req.hostname}${
         NODE_ENV === 'development' ? `:${PORT}` : ''
     }${req.baseUrl}/reset-password/${token}`;
-    await sendEmail('Reset token', user.email, encodedToken);
+    await sendEmail('Reset token', user.email, 'reset', {
+        link: encodedToken,
+        homeLink: `${req.protocol}://${req.hostname}${
+            NODE_ENV === 'development' ? `:${PORT}` : ''
+        }${req.baseUrl}`,
+    });
     res.status(200).json({
         message: 'Your reset token was sent on your email',
     });
 });
 
-exports.resetPassword = catchAsync(async (req, res) => {
+exports.resetPassword = catchAsync(async (req, res, next) => {
     const { token } = req.params;
     const { newPassword, newPasswordConfirm } = req.body;
 

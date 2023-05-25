@@ -1,9 +1,11 @@
 const nodemailer = require('nodemailer');
+const hbs = require('nodemailer-express-handlebars');
+const path = require('path');
 const { log } = require('mercedlogger');
 
 const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } = process.env;
 
-const sendEmail = async (subject, to, text) => {
+const sendEmail = async (subject, to, template, context) => {
     try {
         const transporter = nodemailer.createTransport({
             host: EMAIL_HOST,
@@ -14,11 +16,22 @@ const sendEmail = async (subject, to, text) => {
             },
         });
 
+        const handlebarOptions = {
+            viewEngine: {
+                partialsDir: path.resolve(__dirname, './emails/'),
+                defaultLayout: false,
+            },
+            viewPath: path.resolve(__dirname, '../views/emails'),
+        };
+
+        transporter.use('compile', hbs(handlebarOptions));
+
         const options = {
-            from: EMAIL_USER,
+            from: `< Name Surname ${EMAIL_USER}>`,
             subject,
             to,
-            text,
+            template: `${template}.emails`,
+            context,
         };
 
         await transporter.sendMail(options);

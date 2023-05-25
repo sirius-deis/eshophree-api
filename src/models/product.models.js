@@ -73,7 +73,7 @@ const productSchema = mongoose.Schema({
 });
 
 productSchema.virtual('discount', {
-    ref: 'discount',
+    ref: 'Discount',
     localField: 'discountId',
     foreignField: 'productId',
     justOne: true,

@@ -11,34 +11,18 @@ const checkIfProductsListIsNotBlank = (next, products, message) => {
 };
 
 exports.getAllProducts = catchAsync(async (req, res, next) => {
-    const { skip = 0, limit = 10 } = req.query;
-    const products = await Product.find()
+    const { skip = 0, limit = 10, category = [] } = req.query;
+    const searchOptions = {};
+    if (category.length) {
+        searchOptions.category = { $in: [...category] };
+    }
+    const products = await Product.find(searchOptions)
         .skip(skip)
         .limit(limit)
         .populate('discount');
     checkIfProductsListIsNotBlank(next, products, 'There are no products left');
 
     res.status(200).json({ message: 'Products were found', data: products });
-});
-
-exports.getAllProductsWithinCategory = catchAsync(async (req, res, next) => {
-    const { categoryName } = req.params;
-    const { skip = 0, limit = 10 } = req.query;
-
-    const products = await Product.find({ category: categoryName })
-        .skip(skip)
-        .limit(limit)
-        .populate('discount');
-    checkIfProductsListIsNotBlank(
-        next,
-        products,
-        'There are no products with such category left'
-    );
-
-    res.status(200).json({
-        message: 'Products with given category were found',
-        data: products,
-    });
 });
 
 exports.getProductById = catchAsync(async (req, res, next) => {

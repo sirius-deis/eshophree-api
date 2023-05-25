@@ -18,5 +18,18 @@ exports.addDiscount = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteDiscount = catchAsync(async (req, res, next) => {
+    const { productId } = req.params;
+    const product = await Product.findById(productId);
+
+    if (!product) {
+        return next(new AppError('There is no discount on such product', 404));
+    }
+
+    await Discount.findByIdAndDelete(product.discountId);
+
     res.status(204).json({ message: 'Discount was successfully deleted' });
+});
+
+exports.updateDiscount = catchAsync(async (req, res, next) => {
+    const { productId } = req.params;
 });

@@ -1,4 +1,4 @@
-const { body, param } = require('express-validator');
+const { body, param, query } = require('express-validator');
 
 exports.isEmail = () => body('email').isEmail().escape();
 
@@ -10,3 +10,9 @@ exports.isPrice = field => body(field).isCurrency().escape();
 exports.isIntWithMin = (field, min) => body(field).isInt({ min });
 
 exports.isMongoId = field => param(field).isMongoId();
+
+exports.isArray = (field, isOptional) =>
+    query(field).optional(isOptional).isArray();
+
+exports.isGreaterThan = (field, isOptional, gt) =>
+    query(field).optional(isOptional).isInt({ gt });
