@@ -5,9 +5,7 @@ const Product = require('../models/product.models');
 exports.findProduct = catchAsync(async (req, res, next) => {
     const { productId } = req.params;
     const product = await Product.findById(productId);
-    console.log(productId);
 
-    console.log(product);
     if (!product) {
         return next(
             new AppError(
@@ -16,8 +14,6 @@ exports.findProduct = catchAsync(async (req, res, next) => {
             )
         );
     }
-
-    console.log(product);
 
     req.product = product;
     next();

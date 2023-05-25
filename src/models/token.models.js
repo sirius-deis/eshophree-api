@@ -1,21 +1,21 @@
 const mongoose = require('mongoose');
 
-const TokenSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.SchemaTypes.ObjectId,
-        required: true,
-        ref: 'user',
+const TokenSchema = new mongoose.Schema(
+    {
+        userId: {
+            type: mongoose.SchemaTypes.ObjectId,
+            required: true,
+            ref: 'user',
+        },
+        token: {
+            type: String,
+            required: true,
+        },
     },
-    token: {
-        type: String,
-        required: true,
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now(),
-        expire: 3600 * 6,
-    },
-});
+    {
+        timestamps: true,
+    }
+);
 
 const Token = mongoose.model('Token', TokenSchema);
 

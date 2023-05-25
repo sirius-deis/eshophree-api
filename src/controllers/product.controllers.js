@@ -2,7 +2,6 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
 const Product = require('../models/product.models');
-const Discount = require('../models/discount.models');
 
 const checkIfProductsListIsNotBlank = (next, products, message, statusCode) => {
     if (products.length < 1) {
@@ -19,21 +18,34 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
     const products = await Product.find(searchOptions)
         .skip(skip)
         .limit(limit)
-        .populate('discount');
+        .populate({
+            path: 'discount',
+            options: {
+                select: {
+                    percent: 1,
+                },
+            },
+        });
     checkIfProductsListIsNotBlank(
         next,
         products,
         'There are no products left',
         200
     );
-
     res.status(200).json({ message: 'Products were found', data: products });
 });
 
-exports.getProductById = (req, res, next) => {
-    const product = req.product;
+exports.getProductById = catchAsync(async (req, res, next) => {
+    const product = await req.product.populate({
+        path: 'discount',
+        options: {
+            select: {
+                percent: 1,
+            },
+        },
+    });
     res.status(200).json({ message: 'Product was found', data: product });
-};
+});
 
 exports.addProduct = catchAsync(async (req, res) => {
     const {

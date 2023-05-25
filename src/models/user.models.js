@@ -3,49 +3,58 @@ const mongoose = require('mongoose');
 
 const { BCRYPT_SALT } = process.env;
 
-const UserSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: [
-            true,
-            "name field can't be blank, please provide your real name",
-        ],
+const UserSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: [
+                true,
+                "name field can't be blank, please provide your real name",
+            ],
+        },
+        surname: {
+            type: String,
+            required: [
+                true,
+                "surname field can't be blank, please provide your real name",
+            ],
+        },
+        email: {
+            type: String,
+            lowercase: true,
+            unique: true,
+            required: [
+                true,
+                "email field can't be blank, please provide an email address",
+            ],
+        },
+        role: {
+            type: String,
+            enum: ['user', 'admin'],
+            default: 'user',
+        },
+        password: {
+            type: String,
+            required: [
+                true,
+                "password field can't be blank, please provide a password",
+            ],
+            minlength: 8,
+            select: false,
+        },
+        passwordChangedAt: {
+            type: Date,
+            select: false,
+        },
     },
-    surname: {
-        type: String,
-        required: [
-            true,
-            "surname field can't be blank, please provide your real name",
-        ],
-    },
-    email: {
-        type: String,
-        lowercase: true,
-        unique: true,
-        required: [
-            true,
-            "email field can't be blank, please provide an email address",
-        ],
-    },
-    role: {
-        type: String,
-        enum: ['user', 'admin'],
-        default: 'user',
-    },
-    password: {
-        type: String,
-        required: [
-            true,
-            "password field can't be blank, please provide a password",
-        ],
-        minlength: 8,
-        select: false,
-    },
-    passwordChangedAt: {
-        type: Date,
-        select: false,
-    },
-});
+    {
+        toJSON: {
+            transform: (doc, ret, options) => {
+                delete ret.__v;
+            },
+        },
+    }
+);
 
 UserSchema.pre('save', async function (next) {
     if (!this.isModified('password') || this.isNew) {

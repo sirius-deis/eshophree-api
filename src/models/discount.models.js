@@ -1,21 +1,27 @@
 const mongoose = require('mongoose');
 
-const DiscountSchema = new mongoose.Schema({
-    percent: {
-        type: Number,
-        min: 0,
-        max: 100,
+const DiscountSchema = new mongoose.Schema(
+    {
+        percent: {
+            type: Number,
+            min: 0,
+            max: 100,
+        },
+        till: {
+            type: Date,
+            required: true,
+        },
     },
-    createdAt: {
-        type: Date,
-        default: Date.now(),
-        required: true,
-    },
-    till: {
-        type: Date,
-        required: true,
-    },
-});
+    {
+        toJSON: {
+            transform: (doc, ret, options) => {
+                delete ret.__v;
+                delete ret._id;
+            },
+        },
+        timestamps: true,
+    }
+);
 
 const Discount = mongoose.model('Discount', DiscountSchema);
 

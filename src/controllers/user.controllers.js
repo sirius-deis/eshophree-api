@@ -37,7 +37,7 @@ const deleteResetTokenIfExist = async userId => {
     }
 };
 
-const createResetToken = async () => {
+const createToken = async () => {
     const resetToken = crypto.randomBytes(32).toString('hex');
     const hash = await bcrypt.hash(resetToken, +BCRYPT_SALT);
     return hash;
@@ -74,13 +74,13 @@ exports.signup = catchAsync(async (req, res, next) => {
 exports.login = catchAsync(async (req, res, next) => {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email }).select('+password -__v');
+    const user = await User.findOne({ email }).select('+password');
     if (!user || !(await user.checkPassword(password, user.password))) {
         return next(new AppError('Incorrect email or password', 400));
     }
     user.password = undefined;
 
-    const cart = await Cart.findOne({ userId: user._id }).select('-__v');
+    const cart = await Cart.findOne({ userId: user._id });
 
     sendResponseWithNewToken(
         res,
@@ -125,7 +125,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     }
 
     await deleteResetTokenIfExist(user._id);
-    const hash = await createResetToken();
+    const hash = await createToken();
     const token = encodeURI(hash);
     await Token.create({ userId: user._id, token });
     const encodedToken = `${req.protocol}://${req.hostname}${
