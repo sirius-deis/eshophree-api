@@ -15,7 +15,6 @@ const {
     isPrice,
     isIntWithMin,
     isMongoId,
-    isArray,
     isGreaterThan,
 } = require('../utils/validator');
 
@@ -26,7 +25,9 @@ productRouter
     .get(
         isGreaterThan('skip', true, 0),
         isGreaterThan('limit', true, 0),
-        isArray('category', true),
+        isGreaterThan('minPrice', true, 0),
+        isGreaterThan('maxPrice', true, 0),
+        isIntWithMin('rating', true, 1, 5),
         validator,
         getAllProducts
     )
@@ -36,10 +37,8 @@ productRouter
         isNthLength('category', 5),
         isNthLength('brand', 2),
         isPrice('price'),
-        isIntWithMin('stock', 1),
+        isIntWithMin('stock', false, 1),
         isNthLength('desc', 30, 256),
-        isArray('options'),
-        isArray('images'),
         isNthLength('addition', 10, 256),
         validator,
         auth.restrictTo('admin'),

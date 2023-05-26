@@ -29,7 +29,7 @@ const ProductVendorSchema = new mongoose.Schema(
                 delete ret.__v;
             },
         },
-        _id: false,
+        collection: 'product-vendors',
     }
 );
 

@@ -26,7 +26,6 @@ const CartSchema = mongoose.Schema(
                 delete ret.__v;
             },
         },
-        _id: false,
     }
 );
 

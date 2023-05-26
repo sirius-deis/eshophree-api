@@ -1,9 +1,10 @@
 const nodemailer = require('nodemailer');
 const hbs = require('nodemailer-express-handlebars');
 const path = require('path');
-const { log } = require('mercedlogger');
+const log = require('../utils/log');
 
-const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } = process.env;
+const { NODE_ENV, EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } =
+    process.env;
 
 const sendEmail = async (subject, to, template, context) => {
     try {
@@ -36,9 +37,16 @@ const sendEmail = async (subject, to, template, context) => {
 
         await transporter.sendMail(options);
 
-        log.green('MAILER STATUS', 'Email was sent successfully');
+        if (NODE_ENV === 'development') {
+            log(
+                'info',
+                'magenta',
+                'mailer status',
+                'Email was sent successfully'
+            );
+        }
     } catch (error) {
-        log.red('MAILER STATUS', error);
+        log('error', 'red', 'mailer status', error);
         throw new Error(error);
     }
 };

@@ -20,7 +20,7 @@ reviewRouter.route('/').get(getReviews);
 reviewRouter
     .route('/')
     .post(
-        isIntWithMin('rating', 1, 5),
+        isIntWithMin('rating', false, 1, 5),
         isNthLength('comment', 4, 256),
         validator,
         addReview
@@ -31,7 +31,7 @@ reviewRouter.route('/:reviewId').delete(validator, deleteReview);
 reviewRouter
     .route('/:reviewId')
     .put(
-        isIntWithMin('rating', 1, 5),
+        isIntWithMin('rating', true, 1, 5),
         isNthLength('comment', 4, 256),
         validator,
         updateReview

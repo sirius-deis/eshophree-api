@@ -30,7 +30,6 @@ const ReviewSchema = new mongoose.Schema(
                 delete ret.__v;
             },
         },
-        _id: false,
         timestamps: true,
     }
 );

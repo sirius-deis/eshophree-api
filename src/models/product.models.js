@@ -6,56 +6,56 @@ const productSchema = mongoose.Schema(
             type: String,
             required: [true, "This field can't be blank. Provide a name"],
         },
-        text: {
-            type: String,
-            required: [true, "This field can't be blank. Provide a text"],
+        categoryId: {
+            type: mongoose.SchemaTypes.ObjectId,
+            required: true,
         },
-        category: {
-            type: String,
-            required: [true, "This field can't be blank. Provide a category"],
-        },
-        brand: {
+        sku: {
             type: String,
         },
         price: {
             type: Number,
-            required: [true, "This field can't be blank. Provide a price"],
+            get: price => {
+                return `$${price.toFixed(2)}`;
+            },
         },
-        stock: {
-            type: Number,
-            required: [
-                true,
-                "This field can't be blank. Provide amount of this product",
-            ],
+        brandId: {
+            type: mongoose.SchemaTypes.ObjectId,
+            required: true,
         },
-        desc: {
-            type: String,
-            required: [
-                true,
-                "This field can't be blank. Provide description for this product",
-            ],
+        info: [
+            {
+                title: {
+                    type: String,
+                },
+                item: {
+                    type: String,
+                },
+            },
+        ],
+        about: {
+            type: [String],
         },
         options: [
             {
                 title: String,
                 optArr: [
                     {
-                        opt: String,
-                        price: Number,
+                        opt: {
+                            type: String,
+                        },
+                        plusToPrice: {
+                            type: Number,
+                        },
                     },
                 ],
             },
         ],
+        desc: {
+            type: String,
+        },
         images: {
             type: [String],
-            default: 'default.png',
-        },
-        addition: {
-            type: String,
-            required: [
-                true,
-                "This field can't be blank. Provide additional details for this product",
-            ],
         },
         ratingQuantity: {
             type: Number,
@@ -69,13 +69,13 @@ const productSchema = mongoose.Schema(
         },
         discountId: {
             type: mongoose.SchemaTypes.ObjectId,
-            required: true,
         },
     },
     {
         toJSON: {
             virtuals: true,
             transform: (doc, ret, options) => {
+                delete ret.__v;
                 delete ret.discountId;
             },
         },

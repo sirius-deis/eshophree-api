@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
 
-const ProductInventorySchema = new mongoose.Schema({
-    quantity: {
-        type: Int,
+const ProductInventorySchema = new mongoose.Schema(
+    {
+        stock: {
+            type: Int,
+        },
     },
-});
+    {
+        collection: 'product-inventory',
+    }
+);
 
 const ProductInventory = mongoose.model(
     'ProductInventory',
