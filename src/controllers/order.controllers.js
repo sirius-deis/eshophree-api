@@ -39,4 +39,5 @@ exports.addOrder = catchAsync(async (req, res, next) => {
 
 exports.discardOrder = catchAsync((req, res, next) => {
     const user = req.user;
+    const { orderId } = req.params;
 });
