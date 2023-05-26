@@ -46,6 +46,14 @@ const UserSchema = new mongoose.Schema(
             type: Date,
             select: false,
         },
+        active: {
+            type: Boolean,
+            default: false,
+        },
+        isBlocked: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         toJSON: {

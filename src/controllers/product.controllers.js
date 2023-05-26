@@ -81,9 +81,13 @@ exports.updateProduct = catchAsync(async (req, res) => {
     const { name, category, sku, price, brand, info, about, options, desc, images,
     } = req.body;
     //prettier-ignore
-    const map = addToObjectIfValuesExist( name, category, sku, price, brand, info, about, options, desc, images);
+    const map = addToObjectIfValuesExist({ name, category, sku, price, brand, info, about, options, desc, images });
 
-    await product.update(map);
+    if (!map) {
+        return next(new AppError('Please provide all necessary fields', 400));
+    }
+
+    await product.updateOne(map);
 
     res.status(200).json({ message: 'Project was updated successfully' });
 });

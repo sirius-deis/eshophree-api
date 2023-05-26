@@ -7,6 +7,7 @@ const Cart = require('../models/cart.models');
 const ResetToken = require('../models/resetToken.models');
 const ActivateToken = require('../models/activateToken.models');
 const sendEmail = require('../api/email');
+const { addToObjectIfValuesExist } = require('../utils/utils');
 
 const catchAsync = require('../utils/catchAsync');
 
@@ -81,6 +82,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     const link = buildLink(req, 'activate', activateToken);
     sendEmail('Activate token', email, 'verification', {
         link,
+        homeLink: buildLink(req, '/'),
     });
 
     res.status(201).json({ message: 'Account was successfully created' });
@@ -108,8 +110,44 @@ exports.login = catchAsync(async (req, res, next) => {
     );
 });
 
-//TODO:
-exports.activate = catchAsync(async (req, res, next) => {});
+exports.activate = catchAsync(async (req, res, next) => {
+    const { activateToken: token } = req.params;
+    const activateToken = await ActivateToken.find({ token });
+
+    if (!activateToken) {
+        return next(new AppError('Token verification failed', 400));
+    }
+    const user = await User.findById(activateToken.userId);
+
+    if (!user) {
+        return next(new AppError('Token expired or is incorrect', 400));
+    }
+
+    user.active = true;
+
+    await user.save();
+
+    res.status(200).json({
+        message: 'Your account was activated successfully',
+    });
+});
+
+exports.deactivate = catchAsync(async (req, res, next) => {
+    const user = req.user;
+    const { password } = req.body;
+
+    if (!(await user.checkPassword(password))) {
+        return next(new AppError('Passwords are not the same', 401));
+    }
+
+    user.active = false;
+
+    await user.save();
+
+    res.status(200).json({
+        message: 'Your account was deactivated successfully',
+    });
+});
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
     const user = req.user;
@@ -208,8 +246,29 @@ exports.me = catchAsync(async (req, res) => {
 
     user.password = undefined;
 
-    return res.status(200).json({
+    res.status(200).json({
         message: 'You was sign in successfully',
         data: { user, cart },
+    });
+});
+
+exports.updateMe = catchAsync(async (req, res, next) => {
+    const user = req.user;
+    const { name, surname } = req.body;
+    const map = addToObjectIfValuesExist({ name, surname });
+
+    if (!map) {
+        return next(
+            new AppError(
+                'Please change at least one field to access this route',
+                400
+            )
+        );
+    }
+
+    await user.updateOne(map);
+
+    res.status(200).json({
+        message: 'Your data was updated successfully',
     });
 });
