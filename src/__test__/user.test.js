@@ -304,6 +304,50 @@ describe('/users', () => {
                 });
         });
     });
+    describe('/activate route', () => {
+        it('should return 400 code as activate token was incorrect', done => {
+            request(app)
+                .get(`/api/v1/users/activate/123`)
+                .type('json')
+                .set('Content-Type', 'application/json')
+                .send()
+                .expect('Content-Type', /json/)
+                .expect(400)
+                .expect(res => {
+                    expect(res.body.message).toBe('Token verification failed');
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+    });
+    describe('/deactivate route', () => {
+        it('should return 400 code as there is no access to this route unless you are logged in', done => {
+            request(app)
+                .get(`/api/v1/users/deactivate`)
+                .type('json')
+                .set('Content-Type', 'application/json')
+                .send()
+                .expect('Content-Type', /json/)
+                .expect(401)
+                .expect(res => {
+                    expect(res.body.message).toBe(
+                        'Sign in before trying to access this route'
+                    );
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+    });
 });
 
 describe('/all routes', () => {

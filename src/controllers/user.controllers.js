@@ -32,7 +32,7 @@ const arePasswordsTheSame = (next, password1, password2) => {
 };
 
 const deleteResetTokenIfExist = async userId => {
-    const token = await Token.findOne({ userId });
+    const token = await ResetToken.findOne({ userId });
     if (token) {
         await token.deleteOne();
     }
@@ -83,6 +83,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     sendEmail('Activate token', email, 'verification', {
         link,
         homeLink: buildLink(req, '/'),
+        firstName: user.name,
+        from: 'Esjophree team',
     });
 
     res.status(201).json({ message: 'Account was successfully created' });
@@ -112,7 +114,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
 exports.activate = catchAsync(async (req, res, next) => {
     const { activateToken: token } = req.params;
-    const activateToken = await ActivateToken.find({ token });
+    const activateToken = await ActivateToken.findOne({ token });
 
     if (!activateToken) {
         return next(new AppError('Token verification failed', 400));
@@ -126,6 +128,11 @@ exports.activate = catchAsync(async (req, res, next) => {
     user.active = true;
 
     await user.save();
+
+    sendEmail('Welcome', user.email, 'welcome', {
+        link: buildLink(req, '/login'),
+        homeLink: buildLink(req, '/'),
+    });
 
     res.status(200).json({
         message: 'Your account was activated successfully',

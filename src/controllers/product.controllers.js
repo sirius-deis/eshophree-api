@@ -75,7 +75,7 @@ exports.getProductById = catchAsync(async (req, res) => {
     res.status(200).json({ message: 'Product was found', data: product });
 });
 
-exports.updateProduct = catchAsync(async (req, res) => {
+exports.updateProduct = catchAsync(async (req, res, next) => {
     const product = req.product;
     //prettier-ignore
     const { name, category, sku, price, brand, info, about, options, desc, images,

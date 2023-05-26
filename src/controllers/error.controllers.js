@@ -2,6 +2,7 @@ const log = require('../utils/log');
 
 const { NODE_ENV } = process.env;
 
+// eslint-disable-next-line
 module.exports = (error, req, res, next) => {
     if (error.isOperational) {
         if (NODE_ENV === 'development') {

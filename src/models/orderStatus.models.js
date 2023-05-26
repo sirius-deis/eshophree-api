@@ -4,6 +4,13 @@ const OrderStatusSchema = new mongoose.Schema(
     {
         statusCode: {
             type: String,
+            enum: [
+                'waiting',
+                'started',
+                'processing',
+                'completed',
+                'discarded',
+            ],
             required: true,
         },
         description: {

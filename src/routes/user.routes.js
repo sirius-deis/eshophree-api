@@ -29,7 +29,7 @@ userRouter.post(
     signup
 );
 userRouter.post('/login', isEmail(), isNthLength('password'), validator, login);
-userRouter.post('/activate/:activateToken', activate);
+userRouter.get('/activate/:activateToken', activate);
 userRouter.post('/deactivate', isNthLength('password'), validator, deactivate);
 
 userRouter.post('/forget-password', isEmail(), validator, forgetPassword);

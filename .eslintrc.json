@@ -5,10 +5,16 @@
         "es2021": true
     },
     "extends": ["eslint:recommended", "plugin:node/recommended", "prettier"],
-    "overrides": [],
+    "overrides": [
+        {
+            "files": "./src/__test__/*.test.js",
+            "env": { "jest": true }
+        }
+    ],
     "parserOptions": {
         "ecmaVersion": "latest"
     },
+    // "ignorePatterns": ["/src/__test__/*.test.js"],
     "rules": {
         "no-console": "warn",
         "semi": "error",
