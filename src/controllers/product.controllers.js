@@ -1,5 +1,6 @@
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+const { addToObjectIfValuesExist } = require('../utils/utils');
 
 const Product = require('../models/product.models');
 
@@ -12,15 +13,8 @@ const addToOptionsIfNotEmpty = (options, key, value) => {
 };
 
 exports.getAllProducts = catchAsync(async (req, res, next) => {
-    const {
-        skip = 0,
-        limit = 10,
-        category,
-        brand,
-        maxPrice,
-        minPrice,
-        rating,
-    } = req.query;
+    //prettier-ignore
+    const { skip = 0, limit = 10, category, brand, maxPrice, minPrice, rating} = req.query;
     const queryOptions = {};
 
     addToOptionsIfNotEmpty(queryOptions, 'categoryId', category);
@@ -34,7 +28,6 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
             queryOptions.price.$gte = minPrice;
         }
     }
-    console.log(rating);
     if (rating) {
         queryOptions.$or = [
             { ratingAverage: { $gte: rating } },
@@ -42,10 +35,16 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
         ];
     }
 
-    const products = await Product.find(
-        queryOptions,
-        'name price info images.0'
-    )
+    const products = await Product.find(queryOptions, {
+        name: 1,
+        price: 1,
+        info: 1,
+        ratingQuantity: 1,
+        ratingAverage: 1,
+        images: {
+            $slice: 1,
+        },
+    })
         .skip(skip)
         .limit(limit)
         .populate({
@@ -57,6 +56,7 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
             },
         });
 
+    console.log(products[0]);
     if (products.length < 1) {
         return next(new AppError('There are no products left', 200));
     }
@@ -76,32 +76,31 @@ exports.getProductById = catchAsync(async (req, res, next) => {
     res.status(200).json({ message: 'Product was found', data: product });
 });
 
-exports.addProduct = catchAsync(async (req, res) => {
-    const {
-        name,
-        category,
-        sku,
-        price,
-        brandId,
-        info,
-        about,
-        options,
-        desc,
-        images,
+exports.updateProduct = catchAsync(async (req, res, next) => {
+    const product = req.product;
+    //prettier-ignore
+    const { name, category, sku, price, brand, info, about, options, desc, images,
     } = req.body;
+    //prettier-ignore
+    const map = addToObjectIfValuesExist( name, category, sku, price, brand, info, about, options, desc, images);
 
-    await Product.create({
-        name,
-        category,
-        sku,
-        price,
-        brandId,
-        info,
-        about,
-        options,
-        desc,
-        images,
-    });
+    await product.update(map);
+
+    res.status(200).json({ message: 'Project was updated successfully' });
+});
+
+exports.addProduct = catchAsync(async (req, res) => {
+    //prettier-ignore
+    const { name, category, sku, price, brand, info, about, options, desc, images,
+    } = req.body;
+    //prettier-ignore
+    if (!name && !category && !sku && !price && !brand && !desc && !Array.isArray(info) &&
+        info.length < 1 && !Array.isArray(about) && about.length < 1 && !Array.isArray(options) &&
+        options.length < 1 && Array.isArray(images) && images.length < 1) {
+        return next(new AppError('Please provide correct data', 400));
+    }
+    //prettier-ignore
+    await Product.create({ name, categoryId: category, sku, price, brandId: brand, info, about, options, desc, images});
 
     res.status(201).json({ message: 'Product was added successfully' });
 });

@@ -4,6 +4,7 @@ const {
     addProduct,
     getProductById,
     removeProduct,
+    updateProduct,
 } = require('../controllers/product.controllers');
 const reviewRouter = require('./review.routes');
 const discountRouter = require('./discount.routes');
@@ -47,10 +48,18 @@ productRouter
 
 productRouter
     .route('/:productId')
-    .get(isMongoId('productId'), findProduct, getProductById)
+    .get(isMongoId('productId'), validator, findProduct, getProductById)
+    .put(
+        auth.restrictTo('admin'),
+        isMongoId('productId'),
+        validator,
+        findProduct,
+        updateProduct
+    )
     .delete(
         auth.restrictTo('admin'),
         isMongoId('productId'),
+        validator,
         findProduct,
         removeProduct
     );
