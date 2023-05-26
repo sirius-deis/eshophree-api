@@ -7,21 +7,31 @@ const User = require('../models/user.models');
 exports.isLoggedIn = catchAsync(async (req, res, next) => {
     const { token } = req.cookies;
     if (!token) {
-        throw new AppError('Sign in before trying to access this route', 401);
+        return next(
+            new AppError('Sign in before trying to access this route', 401)
+        );
     }
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     if (!payload) {
-        throw new AppError('Token verification failed', 401);
+        return next(new AppError('Token verification failed', 401));
     }
 
     const user = await User.findById(payload.id).select(
         '+password +passwordChangedAt'
     );
 
+    if (!user) {
+        return next(
+            new AppError('Sign in before trying to access this route', 401)
+        );
+    }
+
     if (new Date(payload.iat * 1000) > user.passwordChangedAt) {
-        throw new AppError(
-            'User recently changed password! Please log in again.',
-            401
+        return next(
+            new AppError(
+                'User recently changed password! Please log in again.',
+                401
+            )
         );
     }
 
@@ -33,8 +43,16 @@ exports.restrictTo = requiredRole => {
     return (req, res, next) => {
         const user = req.user;
 
+        if (!user) {
+            return next(
+                new AppError('Sign in before trying to access this route', 401)
+            );
+        }
+
         if (user.role !== requiredRole) {
-            throw new AppError("You don't have access to this route", 403);
+            return next(
+                new AppError("You don't have access to this route", 403)
+            );
         }
 
         next();

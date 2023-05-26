@@ -14,7 +14,7 @@ const ProductCategorySchema = new mongoose.Schema(
     {
         collection: 'production-category',
         toJSON: {
-            transform: (doc, ret, options) => {
+            transform: (doc, ret) => {
                 delete ret.__v;
             },
         },

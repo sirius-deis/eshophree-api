@@ -1,16 +1,16 @@
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 const AppError = require('../utils/appError');
 const User = require('../models/user.models');
 const Cart = require('../models/cart.models');
-const Token = require('../models/token.models');
+const ResetToken = require('../models/resetToken.models');
+const ActivateToken = require('../models/activateToken.models');
 const sendEmail = require('../api/email');
 
 const catchAsync = require('../utils/catchAsync');
 
-const { JWT_SECRET, JWT_EXPIRES_IN, BCRYPT_SALT, PORT, NODE_ENV } = process.env;
+const { JWT_SECRET, JWT_EXPIRES_IN } = process.env;
 
 const signToken = id => {
     return jwt.sign({ id }, JWT_SECRET, {
@@ -18,7 +18,7 @@ const signToken = id => {
     });
 };
 
-const ArePasswordsTheSame = (next, password1, password2) => {
+const arePasswordsTheSame = (next, password1, password2) => {
     if (password1 !== password2) {
         next(
             new AppError(
@@ -37,10 +37,9 @@ const deleteResetTokenIfExist = async userId => {
     }
 };
 
-const createToken = async () => {
+const createToken = () => {
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const hash = await bcrypt.hash(resetToken, +BCRYPT_SALT);
-    return hash;
+    return resetToken;
 };
 
 const sendResponseWithNewToken = (res, statusCode, data, userId) => {
@@ -54,10 +53,18 @@ const sendResponseWithNewToken = (res, statusCode, data, userId) => {
     res.status(statusCode).json(data);
 };
 
+const buildLink = (req, route, token) => {
+    const link = `${req.protocol}://${req.get('host')}${req.baseUrl}/${route}/${
+        token ? token : ''
+    }`;
+
+    return link;
+};
+
 exports.signup = catchAsync(async (req, res, next) => {
     const { name, surname, email, password, passwordConfirm } = req.body;
 
-    if (!ArePasswordsTheSame(next, password, passwordConfirm)) {
+    if (!arePasswordsTheSame(next, password, passwordConfirm)) {
         return;
     }
 
@@ -68,6 +75,14 @@ exports.signup = catchAsync(async (req, res, next) => {
         password,
     });
     await Cart.create({ userId: user._id, products: [] });
+    const activateToken = createToken();
+    await ActivateToken.create({ userId: user._id, token: activateToken });
+
+    const link = buildLink(req, 'activate', activateToken);
+    sendEmail('Activate token', email, 'verification', {
+        link,
+    });
+
     res.status(201).json({ message: 'Account was successfully created' });
 });
 
@@ -93,6 +108,9 @@ exports.login = catchAsync(async (req, res, next) => {
     );
 });
 
+//TODO:
+exports.activate = catchAsync(async (req, res, next) => {});
+
 exports.updatePassword = catchAsync(async (req, res, next) => {
     const user = req.user;
     const { password, newPassword, newPasswordConfirm } = req.body;
@@ -101,7 +119,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
         return next(new AppError('Incorrect password', 401));
     }
 
-    if (!ArePasswordsTheSame(next, newPassword, newPasswordConfirm)) {
+    if (!arePasswordsTheSame(next, newPassword, newPasswordConfirm)) {
         return;
     }
 
@@ -125,17 +143,12 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     }
 
     await deleteResetTokenIfExist(user._id);
-    const hash = await createToken();
-    const token = encodeURI(hash);
-    await Token.create({ userId: user._id, token });
-    const encodedToken = `${req.protocol}://${req.hostname}${
-        NODE_ENV === 'development' ? `:${PORT}` : ''
-    }${req.baseUrl}/reset-password/${token}`;
+    const token = await createToken();
+    await ResetToken.create({ userId: user._id, token });
+    const encodedToken = buildLink(req, 'reset-password', token);
     await sendEmail('Reset token', user.email, 'reset', {
         link: encodedToken,
-        homeLink: `${req.protocol}://${req.hostname}${
-            NODE_ENV === 'development' ? `:${PORT}` : ''
-        }${req.baseUrl}`,
+        homeLink: buildLink(req, '/'),
     });
     res.status(200).json({
         message: 'Your reset token was sent on your email',
@@ -146,12 +159,12 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     const { token } = req.params;
     const { newPassword, newPasswordConfirm } = req.body;
 
-    const dbToken = await Token.findOne({ token });
+    const dbToken = await ResetToken.findOne({ token });
 
     if (!dbToken) {
         return next(new AppError('Token is invalid or has expired', 400));
     }
-    if (!ArePasswordsTheSame(next, newPassword, newPasswordConfirm)) {
+    if (!arePasswordsTheSame(next, newPassword, newPasswordConfirm)) {
         return;
     }
 

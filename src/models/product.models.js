@@ -74,7 +74,7 @@ const productSchema = mongoose.Schema(
     {
         toJSON: {
             virtuals: true,
-            transform: (doc, ret, options) => {
+            transform: (doc, ret) => {
                 delete ret.__v;
                 delete ret.discountId;
             },

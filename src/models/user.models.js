@@ -49,7 +49,7 @@ const UserSchema = new mongoose.Schema(
     },
     {
         toJSON: {
-            transform: (doc, ret, options) => {
+            transform: (doc, ret) => {
                 delete ret.__v;
             },
         },
@@ -68,7 +68,7 @@ UserSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         return next();
     }
-    this.password = await bcrypt.hash(this.password, +BCRYPT_SALT);
+    this.password = await bcrypt.hash(this.password, +BCRYPT_SALT || 10);
     next();
 });
 

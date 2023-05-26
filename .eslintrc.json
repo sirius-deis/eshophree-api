@@ -13,7 +13,8 @@
         "no-console": "warn",
         "semi": "error",
         "camelcase": "error",
-        "comma-spacing": "warn"
+        "comma-spacing": "warn",
+        "no-unused-vars": "error"
     },
     "plugins": ["prettier"]
 }

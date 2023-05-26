@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
-const TokenSchema = new mongoose.Schema(
+const ActivateTokenSchema = new mongoose.Schema(
     {
         userId: {
             type: mongoose.SchemaTypes.ObjectId,
             required: true,
-            ref: 'user',
+            ref: 'User',
         },
         token: {
             type: String,
@@ -14,9 +14,10 @@ const TokenSchema = new mongoose.Schema(
     },
     {
         timestamps: true,
+        collection: 'activate-token',
     }
 );
 
-const Token = mongoose.model('Token', TokenSchema);
+const ActivateToken = mongoose.model('ActivateToken', ActivateTokenSchema);
 
-module.exports = Token;
+module.exports = ActivateToken;

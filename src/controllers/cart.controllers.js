@@ -28,7 +28,7 @@ exports.addToCart = catchAsync(async (req, res, next) => {
     res.status(201).json({ message: 'Product was successfully added to cart' });
 });
 
-exports.removeFromCart = catchAsync(async (req, res) => {
+exports.removeFromCart = catchAsync(async (req, res, next) => {
     const { productId } = req.params;
     const user = req.user;
     const cart = await Cart.findOne({ userId: user._id });
@@ -54,7 +54,7 @@ exports.removeFromCart = catchAsync(async (req, res) => {
     });
 });
 
-exports.clearCart = catchAsync(async (req, res) => {
+exports.clearCart = catchAsync(async (req, res, next) => {
     const user = req.user;
     const cart = await Cart.findOne({ userId: user._id });
     if (!cart) {

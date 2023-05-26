@@ -22,13 +22,14 @@ const start = () => {
         connect();
     } catch (error) {
         log('error', 'red', 'server status', error);
+        /* eslint-disable */
         process.exit(1);
     }
 };
 
 ['unhandledRejection', 'uncaughtException'].forEach(event => {
     const index = event.search(/[A-Z]/);
-    process.on(event, error => {
+    process.on(event, () => {
         log(
             'error',
             'red',
@@ -38,6 +39,7 @@ const start = () => {
                 .toUpperCase()}`
         );
         server.close(() => {
+            /* eslint-disable */
             process.exit(1);
         });
     });
@@ -48,6 +50,8 @@ const start = () => {
         log('info', 'green', 'server status', `${event} received`);
         server.close(() => {
             log('info', 'green', 'server status', 'Process terminated');
+            /* eslint-disable */
+            process.exit(1);
         });
     });
 });

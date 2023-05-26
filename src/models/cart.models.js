@@ -22,7 +22,7 @@ const CartSchema = mongoose.Schema(
     },
     {
         toJSON: {
-            transform: (doc, ret, options) => {
+            transform: (doc, ret) => {
                 delete ret.__v;
             },
         },

@@ -1,6 +1,7 @@
 const chalk = require('chalk');
 
 module.exports = (type, color, info, log = '', ...rest) => {
+    /* eslint-disable */
     console[type](
         chalk[
             `bg${color[0].toUpperCase() + color.slice(1)}Bright`

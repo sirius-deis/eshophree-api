@@ -33,6 +33,8 @@ productRouter
         getAllProducts
     )
     .post(
+        auth.isLoggedIn,
+        auth.restrictTo('admin'),
         isNthLength('name', 5),
         isNthLength('text', 10),
         isNthLength('category', 5),
@@ -42,7 +44,6 @@ productRouter
         isNthLength('desc', 30, 256),
         isNthLength('addition', 10, 256),
         validator,
-        auth.restrictTo('admin'),
         addProduct
     );
 
@@ -50,6 +51,7 @@ productRouter
     .route('/:productId')
     .get(isMongoId('productId'), validator, findProduct, getProductById)
     .put(
+        auth.isLoggedIn,
         auth.restrictTo('admin'),
         isMongoId('productId'),
         validator,
@@ -57,6 +59,7 @@ productRouter
         updateProduct
     )
     .delete(
+        auth.isLoggedIn,
         auth.restrictTo('admin'),
         isMongoId('productId'),
         validator,

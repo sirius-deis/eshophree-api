@@ -56,7 +56,6 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
             },
         });
 
-    console.log(products[0]);
     if (products.length < 1) {
         return next(new AppError('There are no products left', 200));
     }
@@ -64,7 +63,7 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
     res.status(200).json({ message: 'Products were found', data: products });
 });
 
-exports.getProductById = catchAsync(async (req, res, next) => {
+exports.getProductById = catchAsync(async (req, res) => {
     const product = await req.product.populate({
         path: 'discount',
         options: {
@@ -76,7 +75,7 @@ exports.getProductById = catchAsync(async (req, res, next) => {
     res.status(200).json({ message: 'Product was found', data: product });
 });
 
-exports.updateProduct = catchAsync(async (req, res, next) => {
+exports.updateProduct = catchAsync(async (req, res) => {
     const product = req.product;
     //prettier-ignore
     const { name, category, sku, price, brand, info, about, options, desc, images,
@@ -89,7 +88,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
     res.status(200).json({ message: 'Project was updated successfully' });
 });
 
-exports.addProduct = catchAsync(async (req, res) => {
+exports.addProduct = catchAsync(async (req, res, next) => {
     //prettier-ignore
     const { name, category, sku, price, brand, info, about, options, desc, images,
     } = req.body;
@@ -105,7 +104,7 @@ exports.addProduct = catchAsync(async (req, res) => {
     res.status(201).json({ message: 'Product was added successfully' });
 });
 
-exports.removeProduct = catchAsync(async (req, res, next) => {
+exports.removeProduct = catchAsync(async (req, res) => {
     const product = req.product;
     await product.deleteOne();
 

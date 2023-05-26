@@ -1,7 +1,7 @@
 const catchAsync = require('../utils/catchAsync');
 const Discount = require('../models/discount.models');
 
-exports.addDiscount = catchAsync(async (req, res, next) => {
+exports.addDiscount = catchAsync(async (req, res) => {
     const { percent, till } = req.body;
     const product = req.product;
 
@@ -20,7 +20,7 @@ exports.addDiscount = catchAsync(async (req, res, next) => {
     res.status(201).json({ message: 'Discount was successfully added' });
 });
 
-exports.deleteDiscount = catchAsync(async (req, res, next) => {
+exports.deleteDiscount = catchAsync(async (req, res) => {
     const product = req.product;
 
     await Discount.findByIdAndDelete(product.discountId);
@@ -28,7 +28,7 @@ exports.deleteDiscount = catchAsync(async (req, res, next) => {
     res.status(204).json({ message: 'Discount was successfully deleted' });
 });
 
-exports.updateDiscount = catchAsync(async (req, res, next) => {
+exports.updateDiscount = catchAsync(async (req, res) => {
     const { percent, till } = req.body;
     const product = req.product;
 

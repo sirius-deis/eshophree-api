@@ -46,6 +46,7 @@ const sendEmail = async (subject, to, template, context) => {
             );
         }
     } catch (error) {
+        console.log(error);
         log('error', 'red', 'mailer status', error);
         throw new Error(error);
     }

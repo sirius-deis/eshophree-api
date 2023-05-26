@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const ProductInventorySchema = new mongoose.Schema(
     {
         stock: {
-            type: Int,
+            type: Number,
         },
     },
     {
