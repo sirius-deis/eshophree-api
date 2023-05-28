@@ -268,18 +268,22 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     res.status(200).json({ message: 'Password was changed successfully' });
 });
 
+//TODO: add blacklist with redis
 exports.logout = (req, res) => {
-    res.clearCookie('token');
     res.status(204).send();
 };
 
-exports.deleteAccount = catchAsync(async (req, res) => {
+exports.deleteAccount = catchAsync(async (req, res, next) => {
     const user = req.user;
+    const { password } = req.body;
+    console.log('TEST', password, user.password);
+    if (!(await user.checkPassword(password, user.password))) {
+        return next(new AppError('Incorrect password', 401));
+    }
 
     await user.deleteOne();
     await Cart.deleteOne({ userId: user._id });
 
-    res.clearCookie('token');
     res.status(204).send();
 });
 
@@ -300,9 +304,8 @@ exports.me = catchAsync(async (req, res) => {
 exports.updateMe = catchAsync(async (req, res, next) => {
     const user = req.user;
     const { name, surname } = req.body;
-    const map = addToObjectIfValuesExist({ name, surname });
 
-    if (!map) {
+    if (user.name === name && user.surname === surname) {
         return next(
             new AppError(
                 'Please change at least one field to access this route',
@@ -310,6 +313,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
             )
         );
     }
+
+    const map = addToObjectIfValuesExist(name, surname);
 
     await user.updateOne(map);
 

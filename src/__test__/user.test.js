@@ -661,7 +661,306 @@ describe('/users', () => {
                         'Password was updated successfully'
                     );
                     expect(res.body.token).toBeTruthy();
+                    token2 = res.body.token;
                 })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+    });
+    describe('/forget-password route', () => {
+        it('should return 400 with invalid data', done => {
+            request(app)
+                .post('/api/v1/users/forget-password')
+                .type('json')
+                .set('Content-Type', 'application/json')
+                .send({
+                    email: 'email123',
+                })
+                .expect('Content-Type', /json/)
+                .expect(400)
+                .expect(res => {
+                    expect(res.body.message).toEqual([
+                        "Invalid value. Field 'email' with value 'email123' doesn't pass validation. Please provide correct data",
+                    ]);
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+        it('should return 404 as there are no such email', done => {
+            request(app)
+                .post('/api/v1/users/forget-password')
+                .type('json')
+                .set('Content-Type', 'application/json')
+                .send({
+                    email: 'test123@test.com',
+                })
+                .expect('Content-Type', /json/)
+                .expect(404)
+                .expect(res => {
+                    expect(res.body.message).toBe(
+                        'There is no user with such email'
+                    );
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+        it('should return 200 as there is such email', done => {
+            request(app)
+                .post('/api/v1/users/forget-password')
+                .type('json')
+                .set('Content-Type', 'application/json')
+                .send({
+                    email: 'test1@test.com',
+                })
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .expect(res => {
+                    expect(res.body.message).toBe(
+                        'Your reset token was sent on your email'
+                    );
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+    });
+    describe('/reset-password route', () => {
+        it('should return 400 with invalid data', done => {
+            request(app)
+                .patch('/api/v1/users/reset-password/123')
+                .type('json')
+                .set('Content-Type', 'application/json')
+                .send()
+                .expect('Content-Type', /json/)
+                .expect(400)
+                .expect(res => {
+                    expect(res.body.message.length).toBe(2);
+                    expect(res.body.message).toEqual([
+                        "Invalid value. Field 'newPassword' with value '' doesn't pass validation. Please provide correct data",
+                        "Invalid value. Field 'newPasswordConfirm' with value '' doesn't pass validation. Please provide correct data",
+                    ]);
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+        it('should return 400 as token is invalid', done => {
+            request(app)
+                .patch('/api/v1/users/reset-password/123')
+                .type('json')
+                .set('Content-Type', 'application/json')
+                .send({
+                    newPassword: 'password',
+                    newPasswordConfirm: 'password',
+                })
+                .expect('Content-Type', /json/)
+                .expect(400)
+                .expect(res => {
+                    expect(res.body.message).toBe(
+                        'Token is invalid or has expired'
+                    );
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+    });
+    describe('/me route', () => {
+        it('should return 200', done => {
+            request(app)
+                .get('/api/v1/users/me')
+                .type('json')
+                .set('Authorization', `Bearer ${token2}`)
+                .set('Content-Type', 'application/json')
+                .send()
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .expect(res => {
+                    expect(res.body.message).toBe(
+                        'You was sign in successfully'
+                    );
+                    const user = res.body.data.user;
+                    expect(user.name).toBe('test name');
+                    expect(user.surname).toBe('test surname');
+                    expect(user.email).toBe('user2@test.com');
+                    expect(user.role).toBe('user');
+                    expect(user.active).toBe(true);
+                    expect(user.isBlocked).toBe(false);
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+    });
+    describe('/update-me route', () => {
+        it('should return 400 as fields are incorrect', done => {
+            request(app)
+                .patch('/api/v1/users/update-me')
+                .type('json')
+                .set('Authorization', `Bearer ${token2}`)
+                .set('Content-Type', 'application/json')
+                .send({
+                    name: '',
+                    surname: '',
+                })
+                .expect('Content-Type', /json/)
+                .expect(400)
+                .expect(res => {
+                    expect(res.body.message).toEqual([
+                        "Invalid value. Field 'name' with value '' doesn't pass validation. Please provide correct data",
+                        "Invalid value. Field 'surname' with value '' doesn't pass validation. Please provide correct data",
+                    ]);
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+        it("should return 400 as fields haven't changed", done => {
+            request(app)
+                .patch('/api/v1/users/update-me')
+                .type('json')
+                .set('Authorization', `Bearer ${token2}`)
+                .set('Content-Type', 'application/json')
+                .send({
+                    name: 'test name',
+                    surname: 'test surname',
+                })
+                .expect('Content-Type', /json/)
+                .expect(400)
+                .expect(res => {
+                    expect(res.body.message).toBe(
+                        'Please change at least one field to access this route'
+                    );
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+        it('should return 200', done => {
+            request(app)
+                .patch('/api/v1/users/update-me')
+                .type('json')
+                .set('Authorization', `Bearer ${token2}`)
+                .set('Content-Type', 'application/json')
+                .send({
+                    name: 'new test name',
+                    surname: 'new test surname',
+                })
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .expect(res => {
+                    expect(res.body.message).toBe(
+                        'Your data was updated successfully'
+                    );
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+    });
+
+    describe('/delete route', () => {
+        it('should return 400 as field is incorrect', done => {
+            request(app)
+                .delete('/api/v1/users/delete')
+                .type('json')
+                .set('Authorization', `Bearer ${token2}`)
+                .set('Content-Type', 'application/json')
+                .send({
+                    password: '',
+                })
+                .expect('Content-Type', /json/)
+                .expect(400)
+                .expect(res => {
+                    expect(res.body.message).toEqual([
+                        "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
+                    ]);
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+
+        it('should return 401 as password is incorrect', done => {
+            request(app)
+                .delete('/api/v1/users/delete')
+                .type('json')
+                .set('Authorization', `Bearer ${token2}`)
+                .set('Content-Type', 'application/json')
+                .send({
+                    password: 'password3',
+                })
+                .expect('Content-Type', /json/)
+                .expect(401)
+                .expect(res => {
+                    expect(res.body.message).toBe('Incorrect password');
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+
+        it('should return 200', done => {
+            request(app)
+                .delete('/api/v1/users/delete')
+                .type('json')
+                .set('Authorization', `Bearer ${token2}`)
+                .set('Content-Type', 'application/json')
+                .send({
+                    password: 'password1',
+                })
+                .expect(204)
                 .end((err, res) => {
                     if (err) {
                         done(err);

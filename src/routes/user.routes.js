@@ -40,7 +40,7 @@ userRouter.post(
 );
 
 userRouter.post('/forget-password', isEmail(), validator, forgetPassword);
-userRouter.post(
+userRouter.patch(
     '/reset-password/:token',
     isNthLength('newPassword'),
     isNthLength('newPasswordConfirm'),
@@ -68,6 +68,6 @@ userRouter.patch(
 userRouter.post('/deactivate', isNthLength('password'), validator, deactivate);
 userRouter.get('/logout', logout);
 userRouter.get('/me', me);
-userRouter.delete('/delete', deleteAccount);
+userRouter.delete('/delete', isNthLength('password'), validator, deleteAccount);
 
 module.exports = userRouter;
