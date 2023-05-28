@@ -20,7 +20,10 @@ const sendEmail = async (subject, to, template, context) => {
         const handlebarOptions = {
             viewEngine: {
                 partialsDir: path.resolve(__dirname, './emails/'),
-                defaultLayout: false,
+                defaultLayout: path.resolve(
+                    __dirname,
+                    './emails/layouts/root.emails.js'
+                ),
             },
             viewPath: path.resolve(__dirname, '../views/emails'),
         };

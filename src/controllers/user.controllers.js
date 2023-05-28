@@ -81,6 +81,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
     const link = buildLink(req, 'activate', activateToken);
     sendEmail('Activate token', email, 'verification', {
+        title: 'Please activate your account',
         link,
         homeLink: buildLink(req, '/'),
         firstName: user.name,
@@ -130,6 +131,7 @@ exports.activate = catchAsync(async (req, res, next) => {
     await user.save();
 
     sendEmail('Welcome', user.email, 'welcome', {
+        title: 'Welcome to Eshophree',
         link: buildLink(req, '/login'),
         homeLink: buildLink(req, '/'),
     });
@@ -192,6 +194,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     await ResetToken.create({ userId: user._id, token });
     const encodedToken = buildLink(req, 'reset-password', token);
     await sendEmail('Reset token', user.email, 'reset', {
+        title: 'Reset your password',
         link: encodedToken,
         homeLink: buildLink(req, '/'),
     });
