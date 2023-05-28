@@ -522,7 +522,7 @@ describe('/users', () => {
             request(app)
                 .post('/api/v1/users/reactivate')
                 .type('json')
-                .set('Authorization', `Bearer ${token}`)
+                .set('Authorization', `Bearer ${token2}`)
                 .set('Content-Type', 'application/json')
                 .send({
                     email: 'user2@test.com',
@@ -558,6 +558,109 @@ describe('/users', () => {
                     expect(res.body.message).toBe(
                         'We sent token to your email.'
                     );
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+    });
+    describe('/update-password route', () => {
+        it('should return 400 as there are incorrect fields', done => {
+            request(app)
+                .patch('/api/v1/users/update-password')
+                .type('json')
+                .set('Authorization', `Bearer ${token2}`)
+                .set('Content-Type', 'application/json')
+                .send({})
+                .expect('Content-Type', /json/)
+                .expect(400)
+                .expect(res => {
+                    expect(res.body.message).toEqual([
+                        "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
+                        "Invalid value. Field 'newPassword' with value '' doesn't pass validation. Please provide correct data",
+                        "Invalid value. Field 'newPasswordConfirm' with value '' doesn't pass validation. Please provide correct data",
+                    ]);
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+        it('should return 401 as password is wrong', done => {
+            request(app)
+                .patch('/api/v1/users/update-password')
+                .type('json')
+                .set('Authorization', `Bearer ${token2}`)
+                .set('Content-Type', 'application/json')
+                .send({
+                    password: 'password',
+                    newPassword: 'password1',
+                    newPasswordConfirm: 'password1',
+                })
+                .expect('Content-Type', /json/)
+                .expect(401)
+                .expect(res => {
+                    expect(res.body.message).toEqual('Incorrect password');
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+        it('should return 400 as new password and confirm are not the same', done => {
+            request(app)
+                .patch('/api/v1/users/update-password')
+                .type('json')
+                .set('Authorization', `Bearer ${token2}`)
+                .set('Content-Type', 'application/json')
+                .send({
+                    password: 'password123',
+                    newPassword: 'password1',
+                    newPasswordConfirm: 'password12',
+                })
+                .expect('Content-Type', /json/)
+                .expect(400)
+                .expect(res => {
+                    expect(res.body.message).toEqual(
+                        'Passwords are not the same. Please provide correct passwords'
+                    );
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    } else {
+                        done();
+                    }
+                });
+        });
+        it('should return 200 as new password and confirm are not the same', done => {
+            request(app)
+                .patch('/api/v1/users/update-password')
+                .type('json')
+                .set('Authorization', `Bearer ${token2}`)
+                .set('Content-Type', 'application/json')
+                .send({
+                    password: 'password123',
+                    newPassword: 'password1',
+                    newPasswordConfirm: 'password1',
+                })
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .expect(res => {
+                    expect(res.body.message).toEqual(
+                        'Password was updated successfully'
+                    );
+                    expect(res.body.token).toBeTruthy();
                 })
                 .end((err, res) => {
                     if (err) {

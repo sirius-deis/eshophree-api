@@ -59,8 +59,8 @@ const sendEmail = async (subject, to, template, context) => {
             await transporter.sendMail(options);
         }
     } catch (error) {
-        log('error', 'red', 'mailer status', error);
-        throw new Error(error);
+        // log('error', 'red', 'mailer status', error);
+        // throw new Error(error);
     }
 };
 
