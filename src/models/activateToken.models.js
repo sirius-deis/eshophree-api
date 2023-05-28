@@ -20,14 +20,14 @@ const ActivateTokenSchema = new mongoose.Schema(
         },
         createdAt: {
             type: Date,
+            default: Date.now(),
             validate: {
                 validator: function (v) {
-                    return v > Date.now();
+                    return v < Date.now();
                 },
                 message: props =>
                     `Value ${props.value} is invalid. Value of this field can't be a past time`,
             },
-            required: true,
         },
     },
     {

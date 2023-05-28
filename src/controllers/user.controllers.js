@@ -79,16 +79,18 @@ exports.signup = catchAsync(async (req, res, next) => {
     const activateToken = createToken();
     await ActivateToken.create({ userId: user._id, token: activateToken });
 
-    const link = buildLink(req, 'activate', activateToken);
     sendEmail('Activate token', email, 'verification', {
         title: 'Please activate your account',
-        link,
+        link: buildLink(req, '/activate', activateToken),
         homeLink: buildLink(req, '/'),
         firstName: user.name,
         from: 'Esjophree team',
     });
 
-    res.status(201).json({ message: 'Account was successfully created' });
+    res.status(201).json({
+        message:
+            'Account was successfully created. Check your email to activate it.',
+    });
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -98,6 +100,15 @@ exports.login = catchAsync(async (req, res, next) => {
     if (!user || !(await user.checkPassword(password, user.password))) {
         return next(new AppError('Incorrect email or password', 401));
     }
+    if (user.createdAt <= user.updatedAt) {
+        return next(
+            new AppError(
+                'You account is deactivated. Please reactivate it',
+                401
+            )
+        );
+    }
+
     user.password = undefined;
 
     const cart = await Cart.findOne({ userId: user._id });
@@ -158,6 +169,29 @@ exports.deactivate = catchAsync(async (req, res, next) => {
     });
 });
 
+exports.reactivate = catchAsync(async (req, res, next) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email }).select('+password');
+    if (!user || !(await user.checkPassword(password, user.password))) {
+        return next(new AppError('Incorrect email or password', 401));
+    }
+    if (user.active) {
+        return next(new AppError('Your account is active', 400));
+    }
+
+    const activateToken = createToken();
+    await ActivateToken.create({ userId: user._id, token: activateToken });
+
+    sendEmail('Activate token', email, 'verification', {
+        title: 'Reactivate your account',
+        link: buildLink(req, '/activate', activateToken),
+        homeLink: buildLink(req, '/'),
+    });
+    res.status(200).json({
+        message: 'We sent token to your email.',
+    });
+});
+
 exports.updatePassword = catchAsync(async (req, res, next) => {
     const user = req.user;
     const { password, newPassword, newPasswordConfirm } = req.body;
@@ -192,10 +226,10 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     await deleteResetTokenIfExist(user._id);
     const token = await createToken();
     await ResetToken.create({ userId: user._id, token });
-    const encodedToken = buildLink(req, 'reset-password', token);
+
     await sendEmail('Reset token', user.email, 'reset', {
         title: 'Reset your password',
-        link: encodedToken,
+        link: buildLink(req, 'reset-password', token),
         homeLink: buildLink(req, '/'),
     });
     res.status(200).json({

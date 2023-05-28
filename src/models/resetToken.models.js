@@ -24,7 +24,7 @@ const ResetTokenSchema = new mongoose.Schema(
             expires: 60 * 60 * 24,
             validate: {
                 validator: function (v) {
-                    return v > Date.now();
+                    return v < Date.now();
                 },
                 message: "This field can't be past date",
             },
