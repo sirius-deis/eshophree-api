@@ -51,7 +51,7 @@ const sendResponseWithNewToken = (res, statusCode, data, userId) => {
                 parseInt(process.env.JWT_EXPIRES_IN) * 24 * 60 * 60 * 1000
         ),
     });
-    res.status(statusCode).json(data);
+    res.status(statusCode).json({ ...data, token });
 };
 
 const buildLink = (req, route, token) => {
@@ -100,7 +100,7 @@ exports.login = catchAsync(async (req, res, next) => {
     if (!user || !(await user.checkPassword(password, user.password))) {
         return next(new AppError('Incorrect email or password', 401));
     }
-    if (user.createdAt === user.updatedAt) {
+    if (!user.active && user.createdAt !== user.updatedAt) {
         return next(
             new AppError(
                 'You account is deactivated. Please reactivate it',
@@ -156,8 +156,8 @@ exports.deactivate = catchAsync(async (req, res, next) => {
     const user = req.user;
     const { password } = req.body;
 
-    if (!(await user.checkPassword(password))) {
-        return next(new AppError('Passwords are not the same', 401));
+    if (!(await user.checkPassword(password, user.password))) {
+        return next(new AppError('Wrong password', 401));
     }
 
     user.active = false;

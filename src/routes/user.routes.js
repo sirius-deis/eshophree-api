@@ -11,6 +11,7 @@ const {
     activate,
     deactivate,
     updateMe,
+    reactivate,
 } = require('../controllers/user.controllers');
 const auth = require('../middlewares/auth.middlewares');
 const validator = require('../middlewares/validation.middlwares');
@@ -30,7 +31,13 @@ userRouter.post(
 );
 userRouter.post('/login', isEmail(), isNthLength('password'), validator, login);
 userRouter.get('/activate/:activateToken', activate);
-userRouter.post('/deactivate', isNthLength('password'), validator, deactivate);
+userRouter.post(
+    '/reactivate',
+    isEmail(),
+    isNthLength('password'),
+    validator,
+    reactivate
+);
 
 userRouter.post('/forget-password', isEmail(), validator, forgetPassword);
 userRouter.post(
@@ -58,8 +65,9 @@ userRouter.patch(
     validator,
     updateMe
 );
+userRouter.post('/deactivate', isNthLength('password'), validator, deactivate);
 userRouter.get('/logout', logout);
-userRouter.get('/grab', me);
+userRouter.get('/me', me);
 userRouter.delete('/delete', deleteAccount);
 
 module.exports = userRouter;

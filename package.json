@@ -45,5 +45,8 @@
         "nodemon": "^2.0.22",
         "prettier": "^2.8.8",
         "supertest": "^6.3.3"
+    },
+    "engines": {
+        "node": ">=19.8.0"
     }
 }

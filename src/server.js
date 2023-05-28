@@ -1,6 +1,6 @@
 require('dotenv').config();
 const http = require('http');
-
+const { Server } = require('socket.io');
 const connect = require('./db/connection');
 const app = require('./app');
 const log = require('./utils/log');
@@ -8,9 +8,12 @@ const log = require('./utils/log');
 const { PORT = 3000 } = process.env;
 
 const server = http.createServer(app);
+const io = new Server(server);
+const authIO = require('./socket/auth.middleware');
 
 const start = () => {
     try {
+        connect();
         server.listen(PORT, () => {
             log(
                 'log',
@@ -19,7 +22,6 @@ const start = () => {
                 `Server is running on port: ${PORT}`
             );
         });
-        connect();
     } catch (error) {
         log('error', 'red', 'server status', error);
         /* eslint-disable */
@@ -27,7 +29,20 @@ const start = () => {
     }
 };
 
-['unhandledRejection', 'uncaughtException'].forEach(event => {
+/**
+ * Socket io
+ */
+
+io.use(authIO);
+io.on('connection', socket => {
+    require('./socket/socket')(socket, io);
+});
+
+/**
+ *
+ */
+
+[('unhandledRejection', 'uncaughtException')].forEach(event => {
     const index = event.search(/[A-Z]/);
     process.on(event, () => {
         log(

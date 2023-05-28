@@ -19,13 +19,21 @@ const sendEmail = async (subject, to, template, context) => {
 
         const handlebarOptions = {
             viewEngine: {
-                partialsDir: path.resolve(__dirname, './emails/'),
+                extname: '.handlebars',
+                partialsDir: path.resolve(__dirname, '../views', 'emails/'),
+                layoutsDir: path.resolve(
+                    __dirname,
+                    '../views',
+                    'emails/layouts'
+                ),
                 defaultLayout: path.resolve(
                     __dirname,
-                    './emails/layouts/root.emails.js'
+                    '../views',
+                    './emails/layouts/root.emails.handlebars'
                 ),
             },
             viewPath: path.resolve(__dirname, '../views/emails'),
+            extName: '.handlebars',
         };
 
         transporter.use('compile', hbs(handlebarOptions));

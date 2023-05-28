@@ -5,7 +5,9 @@ const AppError = require('../utils/appError');
 const User = require('../models/user.models');
 
 exports.isLoggedIn = catchAsync(async (req, res, next) => {
-    const { token } = req.cookies;
+    const token =
+        req.headers.authorization &&
+        req.headers.authorization.match(/^Bearer (.*)$/)[1];
     if (!token) {
         return next(
             new AppError('Sign in before trying to access this route', 401)
@@ -26,7 +28,7 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
         );
     }
 
-    if (new Date(payload.iat * 1000) > user.passwordChangedAt) {
+    if (new Date(payload.iat * 1000) < user.passwordChangedAt) {
         return next(
             new AppError(
                 'User recently changed password! Please log in again.',
