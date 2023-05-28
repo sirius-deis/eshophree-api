@@ -37,7 +37,40 @@ exports.addOrder = catchAsync(async (req, res, next) => {
     });
 });
 
-exports.discardOrder = catchAsync((req, res, next) => {
-    const user = req.user;
+exports.updateOrderComment = catchAsync(async (req, res, next) => {
     const { orderId } = req.params;
+    const { comment } = req.body;
+    const orderDetails = await OrderDetails.findById(orderId);
+
+    if (!orderDetails) {
+        return next(
+            new AppError(
+                'There is no such order. Please check if order id is correct',
+                400
+            )
+        );
+    }
+
+    await orderDetails.updateOne({ comment });
+
+    res.status(201).json({
+        message: 'Products from cart were added to order successfully',
+    });
+});
+
+exports.discardOrder = catchAsync(async (req, res, next) => {
+    const { orderId } = req.params;
+    const orderDetails = await OrderDetails.findById(orderId);
+    if (!orderDetails) {
+        return next(
+            new AppError(
+                'There is no such order. Please check if order id is correct',
+                400
+            )
+        );
+    }
+    await OrderStatus.findByIdAndDelete(orderDetails.orderStatusId);
+    await OrderItems.findOneAndDelete({ orderId: OrderDetails._id });
+
+    res.status(204).send();
 });

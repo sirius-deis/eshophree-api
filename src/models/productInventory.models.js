@@ -4,6 +4,8 @@ const ProductInventorySchema = new mongoose.Schema(
     {
         stock: {
             type: Number,
+            min: [0, "This field can't contain negative value"],
+            required: [true, 'This field is required'],
         },
     },
     {

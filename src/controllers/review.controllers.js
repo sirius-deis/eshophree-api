@@ -73,7 +73,7 @@ exports.deleteReview = catchAsync(async (req, res, next) => {
 
     await review.deleteOne();
 
-    res.status(204).json({ message: 'Your review was deleted successfully.' });
+    res.status(204).send();
 });
 
 exports.updateReview = catchAsync(async (req, res, next) => {

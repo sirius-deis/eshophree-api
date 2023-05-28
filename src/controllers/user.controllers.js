@@ -233,7 +233,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
 exports.logout = (req, res) => {
     res.clearCookie('token');
-    res.status(202).json({ message: 'Successfully' });
+    res.status(204).send();
 };
 
 exports.deleteAccount = catchAsync(async (req, res) => {
@@ -241,8 +241,9 @@ exports.deleteAccount = catchAsync(async (req, res) => {
 
     await user.deleteOne();
     await Cart.deleteOne({ userId: user._id });
+
     res.clearCookie('token');
-    res.status(204).end();
+    res.status(204).send();
 });
 
 exports.me = catchAsync(async (req, res) => {

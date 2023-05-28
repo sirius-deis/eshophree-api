@@ -6,9 +6,18 @@ const UserPaymentSchema = new mongoose.Schema(
             type: mongoose.SchemaTypes.ObjectId,
             ref: 'User',
             required: true,
+            unique: true,
         },
         paymentType: {
             type: String,
+            enum: [
+                'cash',
+                'check',
+                'debit card',
+                'credit card',
+                'mobile payments',
+                'bank transfer',
+            ],
         },
     },
     {

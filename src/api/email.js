@@ -36,18 +36,16 @@ const sendEmail = async (subject, to, template, context) => {
         };
 
         if (NODE_ENV === 'development') {
-            log('info', 'blue', 'mailer status', context.link);
-        } else {
-            await transporter.sendMail(options);
-        }
-
-        if (NODE_ENV === 'development') {
             log(
                 'info',
                 'magenta',
                 'mailer status',
                 'Email was sent successfully'
             );
+
+            log('info', 'blue', 'mailer status', context.link);
+        } else {
+            await transporter.sendMail(options);
         }
     } catch (error) {
         log('error', 'red', 'mailer status', error);

@@ -6,12 +6,18 @@ const ReviewSchema = new mongoose.Schema(
     {
         userId: {
             type: mongoose.SchemaTypes.ObjectId,
-            required: true,
+            required: [
+                true,
+                "This field can't be empty please provide id of exiting user",
+            ],
             ref: 'user',
         },
         productId: {
             type: mongoose.SchemaTypes.ObjectId,
-            required: true,
+            required: [
+                true,
+                "This field can't be empty please provide id of exiting product",
+            ],
             ref: 'product',
         },
         rating: {
@@ -22,6 +28,8 @@ const ReviewSchema = new mongoose.Schema(
         },
         comment: {
             type: String,
+            maxlength: [256, "Length can't be more than 256 characters"],
+            minlength: [16, "Length can't be less than 16 characters"],
         },
     },
     {

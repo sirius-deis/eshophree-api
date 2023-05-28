@@ -4,11 +4,22 @@ const DiscountSchema = new mongoose.Schema(
     {
         percent: {
             type: Number,
-            min: 0,
+            min: 1,
             max: 100,
+            required: [
+                true,
+                "This field can't be empty. Please provide valid number between 1 and 100",
+            ],
         },
         till: {
             type: Date,
+            validate: {
+                validator: function (v) {
+                    return v > Date.now();
+                },
+                message: props =>
+                    `Value ${props.value} is incorrect. Please provide valid data`,
+            },
             required: true,
         },
     },

@@ -4,11 +4,13 @@ const ProductCategorySchema = new mongoose.Schema(
     {
         name: {
             type: String,
-            required: true,
+            maxlength: [32, "Length can't be grater than 32 characters"],
+            required: [true, "Category can't be without name"],
+            unique: true,
         },
         desc: {
             type: String,
-            required: true,
+            maxlength: [128, "Length can't be grater than 128 characters"],
         },
     },
     {

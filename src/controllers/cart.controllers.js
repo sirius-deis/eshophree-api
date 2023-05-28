@@ -28,8 +28,9 @@ exports.addToCart = catchAsync(async (req, res, next) => {
     res.status(201).json({ message: 'Product was successfully added to cart' });
 });
 
-exports.removeFromCart = catchAsync(async (req, res, next) => {
+exports.decreaseProductsInCart = catchAsync(async (req, res, next) => {
     const { productId } = req.params;
+    const { quantityToDelete } = req.body;
     const user = req.user;
     const cart = await Cart.findOne({ userId: user._id });
     if (!cart) {
@@ -42,16 +43,14 @@ exports.removeFromCart = catchAsync(async (req, res, next) => {
         return next(new AppError('There is no such product in your cart', 404));
     } else {
         const quantity = cart.products[index].quantity;
-        if (quantity === 1) {
+        if (quantity === 1 || quantity <= quantityToDelete) {
             cart.products.splice(index, 1);
         } else {
             cart.products[index].quantity -= 1;
         }
     }
     await cart.save();
-    res.status(204).json({
-        message: 'Product was successfully deleted from cart',
-    });
+    res.status(204).send();
 });
 
 exports.clearCart = catchAsync(async (req, res, next) => {
@@ -64,5 +63,5 @@ exports.clearCart = catchAsync(async (req, res, next) => {
 
     await cart.save();
 
-    res.status(204).json({ message: 'Cart was cleared successfully' });
+    res.status(204).send();
 });

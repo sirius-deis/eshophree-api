@@ -7,6 +7,8 @@ const UserSchema = new mongoose.Schema(
     {
         name: {
             type: String,
+            trim: true,
+            maxlength: [32, "This field can't be longer than 32 characters"],
             required: [
                 true,
                 "name field can't be blank, please provide your real name",
@@ -14,6 +16,8 @@ const UserSchema = new mongoose.Schema(
         },
         surname: {
             type: String,
+            trim: true,
+            maxlength: [32, "This field can't be longer than 32 characters"],
             required: [
                 true,
                 "surname field can't be blank, please provide your real name",
@@ -30,7 +34,11 @@ const UserSchema = new mongoose.Schema(
         },
         role: {
             type: String,
-            enum: ['user', 'admin'],
+            enum: {
+                values: ['user', 'moderator', 'admin'],
+                message: props =>
+                    `Value ${props.value} is incorrect. Please provide correct data`,
+            },
             default: 'user',
         },
         password: {

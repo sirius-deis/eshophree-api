@@ -4,17 +4,30 @@ const ResetTokenSchema = new mongoose.Schema(
     {
         userId: {
             type: mongoose.SchemaTypes.ObjectId,
-            required: true,
+            required: [
+                true,
+                "This field can't be empty please provide id of exiting user",
+            ],
+            unique: true,
             ref: 'user',
         },
         token: {
             type: String,
-            required: true,
+            required: [
+                true,
+                "This field can't be empty please provide valid token",
+            ],
         },
         createdAt: {
             type: Date,
             default: Date.now(),
             expires: 60 * 60 * 24,
+            validate: {
+                validator: function (v) {
+                    return v > Date.now();
+                },
+                message: "This field can't be past date",
+            },
         },
     },
     {

@@ -15,18 +15,15 @@ reviewRouter.use(auth.isLoggedIn);
 
 reviewRouter.use(isMongoId('productId'));
 
-reviewRouter.route('/').get(getReviews);
-
 reviewRouter
     .route('/')
+    .get(getReviews)
     .post(
         isIntWithMin('rating', false, 1, 5),
         isNthLength('comment', 4, 256),
         validator,
         addReview
     );
-
-reviewRouter.route('/:reviewId').delete(validator, deleteReview);
 
 reviewRouter
     .route('/:reviewId')
@@ -35,6 +32,7 @@ reviewRouter
         isNthLength('comment', 4, 256),
         validator,
         updateReview
-    );
+    )
+    .delete(validator, deleteReview);
 
 module.exports = reviewRouter;

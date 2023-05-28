@@ -5,16 +5,26 @@ const OrderItemsSchema = new mongoose.Schema(
         orderId: {
             type: mongoose.SchemaTypes.ObjectId,
             ref: 'OrderDetails',
-            required: true,
+            required: [
+                true,
+                "This field can't be empty please provide valid data",
+            ],
         },
         productId: {
             type: mongoose.SchemaTypes.ObjectId,
             ref: 'Product',
-            required: true,
+            required: [
+                true,
+                "This field can't be empty please provide valid data",
+            ],
         },
         quantity: {
             type: Number,
-            required: true,
+            min: 1,
+            required: [
+                true,
+                "This field can't be empty please provide valid data",
+            ],
         },
     },
     {
