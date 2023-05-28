@@ -24,7 +24,7 @@ const OrderStatusSchema = new mongoose.Schema(
         },
     },
     {
-        collection: 'order-status',
+        collection: 'order-statuses',
     }
 );
 

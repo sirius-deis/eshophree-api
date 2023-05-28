@@ -100,7 +100,7 @@ exports.login = catchAsync(async (req, res, next) => {
     if (!user || !(await user.checkPassword(password, user.password))) {
         return next(new AppError('Incorrect email or password', 401));
     }
-    if (user.createdAt <= user.updatedAt) {
+    if (user.createdAt === user.updatedAt) {
         return next(
             new AppError(
                 'You account is deactivated. Please reactivate it',

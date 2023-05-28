@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const OrderDetailsSchema = new mongoose.Schema(
+const OrderDetailSchema = new mongoose.Schema(
     {
         userId: {
             type: mongoose.SchemaTypes.ObjectId,
@@ -23,6 +23,18 @@ const OrderDetailsSchema = new mongoose.Schema(
                 'This field is required. Please provide a valid data',
             ],
         },
+        orderItems: [
+            {
+                orderItemId: {
+                    type: mongoose.SchemaTypes.ObjectId,
+                    required: [
+                        true,
+                        "This field can't be empty. Please provide id of exiting product",
+                    ],
+                    ref: 'OrderItem',
+                },
+            },
+        ],
         comment: {
             type: String,
             trim: true,
@@ -35,6 +47,6 @@ const OrderDetailsSchema = new mongoose.Schema(
     }
 );
 
-const OrderDetails = mongoose.model('OrderDetails', OrderDetailsSchema);
+const OrderDetail = mongoose.model('OrderDetails', OrderDetailSchema);
 
-module.exports = OrderDetails;
+module.exports = OrderDetail;

@@ -1,5 +1,6 @@
 const express = require('express');
 const {
+    getOrder,
     addOrder,
     updateOrderComment,
     discardOrder,
@@ -17,6 +18,7 @@ orderRouter.route('/').post(addOrder);
 
 orderRouter
     .route('/:orderId')
+    .get(isMongoId('orderId'), validator, getOrder)
     .patch(
         isMongoId('orderId'),
         isNthLength('comment', 5, 256),

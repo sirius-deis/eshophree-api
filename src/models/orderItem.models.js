@@ -1,15 +1,7 @@
 const mongoose = require('mongoose');
 
-const OrderItemsSchema = new mongoose.Schema(
+const OrderItemSchema = new mongoose.Schema(
     {
-        orderId: {
-            type: mongoose.SchemaTypes.ObjectId,
-            ref: 'OrderDetails',
-            required: [
-                true,
-                "This field can't be empty please provide valid data",
-            ],
-        },
         productId: {
             type: mongoose.SchemaTypes.ObjectId,
             ref: 'Product',
@@ -32,6 +24,6 @@ const OrderItemsSchema = new mongoose.Schema(
     }
 );
 
-const Order = mongoose.model('OrderItems', OrderItemsSchema);
+const OrderItem = mongoose.model('OrderItem', OrderItemSchema);
 
-module.exports = Order;
+module.exports = OrderItem;

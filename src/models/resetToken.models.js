@@ -32,7 +32,7 @@ const ResetTokenSchema = new mongoose.Schema(
     },
     {
         timestamps: true,
-        collection: 'reset-token',
+        collection: 'reset-tokens',
     }
 );
 

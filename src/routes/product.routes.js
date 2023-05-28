@@ -1,5 +1,6 @@
 const express = require('express');
 const {
+    getProductCategories,
     getAllProducts,
     addProduct,
     getProductById,
@@ -20,6 +21,8 @@ const {
 } = require('../utils/validator');
 
 const productRouter = express.Router();
+
+productRouter.get('/categories', getProductCategories);
 
 productRouter
     .route('/')
@@ -50,7 +53,7 @@ productRouter
 productRouter
     .route('/:productId')
     .get(isMongoId('productId'), validator, findProduct, getProductById)
-    .put(
+    .patch(
         auth.isLoggedIn,
         auth.restrictTo('admin'),
         isMongoId('productId'),

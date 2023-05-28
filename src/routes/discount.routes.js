@@ -23,7 +23,7 @@ discountRouter.use(validator);
 discountRouter
     .route('/')
     .post(findProduct, addDiscount)
-    .put(findProduct, updateDiscount)
+    .patch(findProduct, updateDiscount)
     .delete(findProduct, deleteDiscount);
 
 module.exports = discountRouter;

@@ -27,7 +27,7 @@ reviewRouter
 
 reviewRouter
     .route('/:reviewId')
-    .put(
+    .patch(
         isIntWithMin('rating', true, 1, 5),
         isNthLength('comment', 4, 256),
         validator,

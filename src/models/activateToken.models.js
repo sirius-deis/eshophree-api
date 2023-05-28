@@ -32,7 +32,7 @@ const ActivateTokenSchema = new mongoose.Schema(
     },
     {
         timestamps: true,
-        collection: 'activate-token',
+        collection: 'activate-tokens',
     }
 );
 

@@ -3,6 +3,7 @@ const AppError = require('../utils/appError');
 const { addToObjectIfValuesExist } = require('../utils/utils');
 
 const Product = require('../models/product.models');
+const ProductCategory = require('../models/productCategory.models');
 
 const addToOptionsIfNotEmpty = (options, key, value) => {
     if (value && typeof value === 'string') {
@@ -11,6 +12,12 @@ const addToOptionsIfNotEmpty = (options, key, value) => {
         options[key] = { $all: [...value] };
     }
 };
+
+exports.getProductCategories = catchAsync(async (req, res) => {
+    const productCategory = await ProductCategory.find();
+
+    res.status(200).json({ message: '', data: { productCategory } });
+});
 
 exports.getAllProducts = catchAsync(async (req, res, next) => {
     //prettier-ignore

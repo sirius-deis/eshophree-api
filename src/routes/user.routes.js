@@ -43,7 +43,7 @@ userRouter.post(
 
 userRouter.use(auth.isLoggedIn);
 
-userRouter.post(
+userRouter.patch(
     '/update-password',
     isNthLength('password'),
     isNthLength('newPassword'),
@@ -51,7 +51,7 @@ userRouter.post(
     validator,
     updatePassword
 );
-userRouter.put(
+userRouter.patch(
     '/update-me',
     isNthLength('name'),
     isNthLength('surname'),
