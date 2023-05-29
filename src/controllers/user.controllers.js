@@ -8,6 +8,7 @@ const ResetToken = require('../models/resetToken.models');
 const ActivateToken = require('../models/activateToken.models');
 const sendEmail = require('../api/email');
 const { addToObjectIfValuesExist } = require('../utils/utils');
+const { getValue, setValue } = require('../db/redis');
 
 const catchAsync = require('../utils/catchAsync');
 
@@ -60,6 +61,13 @@ const buildLink = (req, route, token) => {
     }`;
 
     return link;
+};
+
+const addTokenToBlocklist = async (id, token, expirationTime) => {
+    const value = await getValue(id, token);
+    if (value === null) {
+        await setValue(`${id}`, token, { EX: expirationTime });
+    }
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
@@ -268,15 +276,17 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     res.status(200).json({ message: 'Password was changed successfully' });
 });
 
-//TODO: add blacklist with redis
-exports.logout = (req, res) => {
+exports.logout = catchAsync(async (req, res) => {
+    const token = req.headers.authorization.match(/^Bearer (.*)$/)[1];
+    const { id, exp } = jwt.verify(token, JWT_SECRET);
+    const expirationTime = (new Date(exp * 1000) - new Date()) / 1000;
+    addTokenToBlocklist(id, token, expirationTime);
     res.status(204).send();
-};
+});
 
 exports.deleteAccount = catchAsync(async (req, res, next) => {
     const user = req.user;
     const { password } = req.body;
-    console.log('TEST', password, user.password);
     if (!(await user.checkPassword(password, user.password))) {
         return next(new AppError('Incorrect password', 401));
     }

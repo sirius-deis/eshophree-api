@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const connect = require('./db/connection');
 const app = require('./app');
 const log = require('./utils/log');
+const { redisConnect } = require('./db/redis');
 
 const { PORT = 3000 } = process.env;
 
@@ -14,6 +15,7 @@ const authIO = require('./socket/auth.middleware');
 const start = () => {
     try {
         connect();
+        redisConnect();
         server.listen(PORT, () => {
             log(
                 'log',

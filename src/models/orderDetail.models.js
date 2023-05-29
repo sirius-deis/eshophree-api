@@ -37,7 +37,6 @@ const OrderDetailSchema = new mongoose.Schema(
         ],
         comment: {
             type: String,
-            trim: true,
             minlength: [5, "Length can't be less than 5 characters"],
             maxlength: [256, "Length can't be more than 256 characters"],
         },

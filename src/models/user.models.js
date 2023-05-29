@@ -7,7 +7,6 @@ const UserSchema = new mongoose.Schema(
     {
         name: {
             type: String,
-            trim: true,
             maxlength: [32, "This field can't be longer than 32 characters"],
             required: [
                 true,
@@ -16,7 +15,6 @@ const UserSchema = new mongoose.Schema(
         },
         surname: {
             type: String,
-            trim: true,
             maxlength: [32, "This field can't be longer than 32 characters"],
             required: [
                 true,

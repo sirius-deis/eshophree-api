@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const User = require('../models/user.models');
+const { getValue } = require('../db/redis');
 
 exports.isLoggedIn = catchAsync(async (req, res, next) => {
     const token =
@@ -16,6 +17,12 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     if (!payload) {
         return next(new AppError('Token verification failed', 401));
+    }
+
+    const blockedToken = await getValue(payload.id, token);
+
+    if (blockedToken) {
+        return next(new AppError('Token is invalid', 401));
     }
 
     const user = await User.findById(payload.id).select(

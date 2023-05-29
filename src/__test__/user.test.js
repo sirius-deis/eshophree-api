@@ -901,7 +901,6 @@ describe('/users', () => {
                 });
         });
     });
-
     describe('/delete route', () => {
         it('should return 400 as field is incorrect', done => {
             request(app)
