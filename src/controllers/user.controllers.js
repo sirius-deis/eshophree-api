@@ -172,6 +172,11 @@ exports.deactivate = catchAsync(async (req, res, next) => {
 
     await user.save();
 
+    const token = req.headers.authorization.match(/^Bearer (.*)$/)[1];
+    const { userId, exp } = req;
+    const expirationTime = (new Date(exp * 1000) - new Date()) / 1000;
+    addTokenToBlocklist(userId, token, expirationTime);
+
     res.status(200).json({
         message: 'Your account was deactivated successfully',
     });
@@ -278,9 +283,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
 exports.logout = catchAsync(async (req, res) => {
     const token = req.headers.authorization.match(/^Bearer (.*)$/)[1];
-    const { id, exp } = jwt.verify(token, JWT_SECRET);
+    const { userId, exp } = req;
     const expirationTime = (new Date(exp * 1000) - new Date()) / 1000;
-    addTokenToBlocklist(id, token, expirationTime);
+    addTokenToBlocklist(userId, token, expirationTime);
     res.status(204).send();
 });
 

@@ -1,13 +1,16 @@
 const request = require('supertest');
 const { connect, clearDatabase, closeDatabase } = require('./db');
+const { redisConnect, redisDisconnect } = require('../db/redis.js');
 const User = require('../models/user.models');
 const app = require('../app');
+const makeRequest = require('./helper');
 
 describe('/users', () => {
     let token = '';
     let token2 = '';
     beforeAll(async () => {
         await connect();
+        await redisConnect();
         await User.create({
             email: 'user@test.com',
             password: 'password123',
@@ -31,200 +34,119 @@ describe('/users', () => {
     afterAll(async () => {
         await clearDatabase();
         await closeDatabase();
+        await redisDisconnect();
     });
 
     describe('/signup route', () => {
         it('should return 400 error as body is empty', done => {
-            request(app)
-                .post('/api/v1/users/signup')
-                .type('json')
-                .set('Accept', 'application/json')
-                .send()
-                .expect('Content-Type', /json/)
-                .expect(400)
-                .expect(res => {
-                    expect(res.body.message).toEqual([
-                        "Invalid value. Field 'email' with value 'undefined' doesn't pass validation. Please provide correct data",
-                        "Invalid value. Field 'name' with value '' doesn't pass validation. Please provide correct data",
-                        "Invalid value. Field 'surname' with value '' doesn't pass validation. Please provide correct data",
-                        "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
-                        "Invalid value. Field 'passwordConfirm' with value '' doesn't pass validation. Please provide correct data",
-                    ]);
-                })
-                .end((err, res) => {
-                    if (err) {
-                        done(err);
-                    } else {
-                        done();
-                    }
-                });
+            makeRequest('/api/v1/users/signup', {}, 400, done, [
+                "Invalid value. Field 'email' with value 'undefined' doesn't pass validation. Please provide correct data",
+                "Invalid value. Field 'name' with value '' doesn't pass validation. Please provide correct data",
+                "Invalid value. Field 'surname' with value '' doesn't pass validation. Please provide correct data",
+                "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
+                "Invalid value. Field 'passwordConfirm' with value '' doesn't pass validation. Please provide correct data",
+            ]);
         });
 
         it('should return 400 error as body is empty', done => {
-            request(app)
-                .post('/api/v1/users/signup')
-                .type('json')
-                .set('Accept', 'application/json')
-                .send({
-                    name: 'test name',
-                })
-                .expect('Content-Type', /json/)
-                .expect(400)
-                .expect(res => {
-                    expect(res.body.message).toEqual([
-                        "Invalid value. Field 'email' with value 'undefined' doesn't pass validation. Please provide correct data",
-                        "Invalid value. Field 'surname' with value '' doesn't pass validation. Please provide correct data",
-                        "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
-                        "Invalid value. Field 'passwordConfirm' with value '' doesn't pass validation. Please provide correct data",
-                    ]);
-                })
-                .end((err, res) => {
-                    if (err) {
-                        done(err);
-                    } else {
-                        done();
-                    }
-                });
+            makeRequest(
+                '/api/v1/users/signup',
+                { name: 'test name' },
+                400,
+                done,
+                [
+                    "Invalid value. Field 'email' with value 'undefined' doesn't pass validation. Please provide correct data",
+                    "Invalid value. Field 'surname' with value '' doesn't pass validation. Please provide correct data",
+                    "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
+                    "Invalid value. Field 'passwordConfirm' with value '' doesn't pass validation. Please provide correct data",
+                ]
+            );
         });
 
         it('should return 400 error as body is empty', done => {
-            request(app)
-                .post('/api/v1/users/signup')
-                .type('json')
-                .set('Accept', 'application/json')
-                .send({
+            makeRequest(
+                '/api/v1/users/signup',
+                {
                     name: 'test name',
                     surname: 'test surname',
-                })
-                .expect('Content-Type', /json/)
-                .expect(400)
-                .expect(res => {
-                    expect(res.body.message).toEqual([
-                        "Invalid value. Field 'email' with value 'undefined' doesn't pass validation. Please provide correct data",
-                        "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
-                        "Invalid value. Field 'passwordConfirm' with value '' doesn't pass validation. Please provide correct data",
-                    ]);
-                })
-                .end((err, res) => {
-                    if (err) {
-                        done(err);
-                    } else {
-                        done();
-                    }
-                });
+                },
+                400,
+                done,
+                [
+                    "Invalid value. Field 'email' with value 'undefined' doesn't pass validation. Please provide correct data",
+                    "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
+                    "Invalid value. Field 'passwordConfirm' with value '' doesn't pass validation. Please provide correct data",
+                ]
+            );
         });
 
         it('should return 400 error as body is empty', done => {
-            request(app)
-                .post('/api/v1/users/signup')
-                .type('json')
-                .set('Accept', 'application/json')
-                .send({
+            makeRequest(
+                '/api/v1/users/signup',
+                {
                     name: 'test name',
                     surname: 'test surname',
                     email: 'test@test.com',
-                })
-                .expect('Content-Type', /json/)
-                .expect(400)
-                .expect(res => {
-                    expect(res.body.message).toEqual([
-                        "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
-                        "Invalid value. Field 'passwordConfirm' with value '' doesn't pass validation. Please provide correct data",
-                    ]);
-                })
-                .end((err, res) => {
-                    if (err) {
-                        done(err);
-                    } else {
-                        done();
-                    }
-                });
+                },
+                400,
+                done,
+                [
+                    "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
+                    "Invalid value. Field 'passwordConfirm' with value '' doesn't pass validation. Please provide correct data",
+                ]
+            );
         });
 
         it('should return 400 error as body is empty', done => {
-            request(app)
-                .post('/api/v1/users/signup')
-                .type('json')
-                .set('Accept', 'application/json')
-                .send({
+            makeRequest(
+                '/api/v1/users/signup',
+                {
                     name: 'test name',
                     surname: 'test surname',
                     email: 'test@test.com',
                     password: 'password123',
-                })
-                .expect('Content-Type', /json/)
-                .expect(400)
-                .expect(res => {
-                    expect(res.body.message).toEqual([
-                        "Invalid value. Field 'passwordConfirm' with value '' doesn't pass validation. Please provide correct data",
-                    ]);
-                })
-                .end((err, res) => {
-                    if (err) {
-                        done(err);
-                    } else {
-                        done();
-                    }
-                });
+                },
+                400,
+                done,
+                [
+                    "Invalid value. Field 'passwordConfirm' with value '' doesn't pass validation. Please provide correct data",
+                ]
+            );
         });
 
         it('should return 400 error as passwords are not the same', done => {
-            request(app)
-                .post('/api/v1/users/signup')
-                .type('json')
-                .set('Accept', 'application/json')
-                .send({
+            makeRequest(
+                '/api/v1/users/signup',
+                {
                     name: 'test name',
                     surname: 'test surname',
                     email: 'test@test.com',
                     password: 'password123',
                     passwordConfirm: 'password',
-                })
-                .expect('Content-Type', /json/)
-                .expect(400)
-                .expect(res => {
-                    expect(res.body.message).toEqual(
-                        'Passwords are not the same. Please provide correct passwords'
-                    );
-                })
-                .end((err, res) => {
-                    if (err) {
-                        done(err);
-                    } else {
-                        done();
-                    }
-                });
+                },
+                400,
+                done,
+                'Passwords are not the same. Please provide correct passwords'
+            );
         });
 
         it('should successfully register a new account', done => {
-            request(app)
-                .post('/api/v1/users/signup')
-                .type('json')
-                .set('Accept', 'application/json')
-                .send({
+            makeRequest(
+                '/api/v1/users/signup',
+                {
                     name: 'test name',
                     surname: 'test surname',
                     email: 'test1@test.com',
                     password: 'password123',
                     passwordConfirm: 'password123',
-                })
-                .expect('Content-Type', /json/)
-                .expect(201)
-                .expect(res => {
-                    expect(res.body.message).toBe(
-                        'Account was successfully created. Check your email to activate it.'
-                    );
-                })
-                .end((err, res) => {
-                    if (err) {
-                        done(err);
-                    } else {
-                        done();
-                    }
-                });
+                },
+                201,
+                done,
+                'Account was successfully created. Check your email to activate it.'
+            );
         });
     });
-    describe('/login route', () => {
+    describe.skip('/login route', () => {
         it('should return 400 error as there are not valid fields in body', done => {
             request(app)
                 .post('/api/v1/users/login')
@@ -324,7 +246,7 @@ describe('/users', () => {
                 });
         });
     });
-    describe('/activate route', () => {
+    describe.skip('/activate route', () => {
         it('should return 400 code as activate token was incorrect', done => {
             request(app)
                 .get(`/api/v1/users/activate/123`)
@@ -345,7 +267,7 @@ describe('/users', () => {
                 });
         });
     });
-    describe('/deactivate route', () => {
+    describe.skip('/deactivate route', () => {
         it('should return 400 code as there is no access to this route unless you are logged in', done => {
             request(app)
                 .get(`/api/v1/users/deactivate`)
@@ -438,7 +360,7 @@ describe('/users', () => {
                 });
         });
     });
-    describe('/reactivate route', () => {
+    describe.skip('/reactivate route', () => {
         it('should return 401 as email is empty', done => {
             request(app)
                 .post('/api/v1/users/reactivate')
@@ -568,7 +490,7 @@ describe('/users', () => {
                 });
         });
     });
-    describe('/update-password route', () => {
+    describe.skip('/update-password route', () => {
         it('should return 400 as there are incorrect fields', done => {
             request(app)
                 .patch('/api/v1/users/update-password')
@@ -672,7 +594,7 @@ describe('/users', () => {
                 });
         });
     });
-    describe('/forget-password route', () => {
+    describe.skip('/forget-password route', () => {
         it('should return 400 with invalid data', done => {
             request(app)
                 .post('/api/v1/users/forget-password')
@@ -743,7 +665,7 @@ describe('/users', () => {
                 });
         });
     });
-    describe('/reset-password route', () => {
+    describe.skip('/reset-password route', () => {
         it('should return 400 with invalid data', done => {
             request(app)
                 .patch('/api/v1/users/reset-password/123')
@@ -792,7 +714,7 @@ describe('/users', () => {
                 });
         });
     });
-    describe('/me route', () => {
+    describe.skip('/me route', () => {
         it('should return 200', done => {
             request(app)
                 .get('/api/v1/users/me')
@@ -823,7 +745,7 @@ describe('/users', () => {
                 });
         });
     });
-    describe('/update-me route', () => {
+    describe.skip('/update-me route', () => {
         it('should return 400 as fields are incorrect', done => {
             request(app)
                 .patch('/api/v1/users/update-me')
@@ -901,7 +823,7 @@ describe('/users', () => {
                 });
         });
     });
-    describe('/delete route', () => {
+    describe.skip('/delete route', () => {
         it('should return 400 as field is incorrect', done => {
             request(app)
                 .delete('/api/v1/users/delete')

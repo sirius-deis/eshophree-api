@@ -45,6 +45,8 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
     }
 
     req.user = user;
+    req.userId = user._id;
+    req.exp = payload.exp;
     next();
 });
 

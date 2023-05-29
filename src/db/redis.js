@@ -12,6 +12,10 @@ const redisConnect = async () => {
     await client.connect();
 };
 
+const redisDisconnect = async () => {
+    await client.disconnect();
+};
+
 const getValue = async (key, value) => {
     return JSON.parse(await client.get(`${key}:${value}`));
 };
@@ -26,6 +30,7 @@ const setValue = async (key, value, options) => {
 
 module.exports = {
     redisConnect,
+    redisDisconnect,
     client,
     getValue,
     setValue,
