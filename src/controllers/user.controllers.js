@@ -28,8 +28,9 @@ const arePasswordsTheSame = (next, password1, password2) => {
                 400
             )
         );
+    } else {
+        return true;
     }
-    return true;
 };
 
 const deleteResetTokenIfExist = async userId => {
@@ -87,7 +88,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     const activateToken = createToken();
     await ActivateToken.create({ userId: user._id, token: activateToken });
 
-    sendEmail('Activate token', email, 'verification', {
+    await sendEmail('Activate token', email, 'verification', {
         title: 'Please activate your account',
         link: buildLink(req, '/activate', activateToken),
         homeLink: buildLink(req, '/'),
@@ -149,7 +150,7 @@ exports.activate = catchAsync(async (req, res, next) => {
 
     await user.save();
 
-    sendEmail('Welcome', user.email, 'welcome', {
+    await sendEmail('Welcome', user.email, 'welcome', {
         title: 'Welcome to Eshophree',
         link: buildLink(req, '/login'),
         homeLink: buildLink(req, '/'),
@@ -195,7 +196,7 @@ exports.reactivate = catchAsync(async (req, res, next) => {
     const activateToken = createToken();
     await ActivateToken.create({ userId: user._id, token: activateToken });
 
-    sendEmail('Activate token', email, 'verification', {
+    await sendEmail('Activate token', email, 'verification', {
         title: 'Reactivate your account',
         link: buildLink(req, '/activate', activateToken),
         homeLink: buildLink(req, '/'),
