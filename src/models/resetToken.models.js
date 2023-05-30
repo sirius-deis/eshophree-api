@@ -8,7 +8,6 @@ const ResetTokenSchema = new mongoose.Schema(
                 true,
                 "This field can't be empty please provide id of exiting user",
             ],
-            unique: true,
             ref: 'user',
         },
         token: {

@@ -2,32 +2,37 @@
 const request = require('supertest');
 const app = require('../app');
 
-module.exports = (
-    method,
-    path,
-    body,
-    status,
+module.exports = ({
+    method = 'post',
+    route = '/api/v1/wrong-route',
+    body = {},
+    statusCode = 404,
     done,
-    expectResult,
-    isTypePresent = true,
-    getToken
-) => {
-    let partial = request(app)
-        [method](path)
-        .type('json')
-        .set('Accept', 'application/json')
-        .send(body);
+    expectedResult = `Can't find ${route} on this server`,
+    isContentTypePresent = true,
+    saveToken,
+    token,
+}) => {
+    let partial = request(app)[method](route).type('json');
 
-    if (isTypePresent) {
+    if (token) {
+        partial = partial.set('Authorization', `Bearer ${token}`);
+    }
+
+    partial.set('Accept', 'application/json').send(body);
+
+    if (isContentTypePresent) {
         partial = partial.expect('Content-Type', /json/);
     }
 
     partial
-        .expect(status)
+        .expect(statusCode)
         .expect(res => {
             // eslint-disable-next-line no-undef
-            expect(res.body.message).toEqual(expectResult);
-            getToken && getToken(res.body.token);
+            expect(res.body.message).toEqual(expectedResult);
+            // eslint-disable-next-line no-undef
+            saveToken && expect(res.body.token).toBeTruthy();
+            saveToken && saveToken(res.body.token);
         })
         .end(done);
 };

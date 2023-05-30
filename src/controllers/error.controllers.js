@@ -13,7 +13,7 @@ module.exports = (error, req, res, next) => {
         if (NODE_ENV === 'development') {
             log('error', 'magenta', 'server status', error.name, error);
         }
-        res.status(error.statusCode).json({ message: error.message, error });
+        res.status(error.statusCode).json({ message: error.message });
     } else {
         log('error', 'red', 'server status', error.name, error);
         res.status(500).json({

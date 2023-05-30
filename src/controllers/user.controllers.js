@@ -90,7 +90,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
     await sendEmail('Activate token', email, 'verification', {
         title: 'Please activate your account',
-        link: buildLink(req, '/activate', activateToken),
+        link: buildLink(req, 'activate', activateToken),
         homeLink: buildLink(req, '/'),
         firstName: user.name,
         from: 'Esjophree team',
@@ -149,10 +149,11 @@ exports.activate = catchAsync(async (req, res, next) => {
     user.active = true;
 
     await user.save();
+    await activateToken.deleteOne();
 
     await sendEmail('Welcome', user.email, 'welcome', {
         title: 'Welcome to Eshophree',
-        link: buildLink(req, '/login'),
+        link: buildLink(req, 'login'),
         homeLink: buildLink(req, '/'),
     });
 
@@ -166,7 +167,7 @@ exports.deactivate = catchAsync(async (req, res, next) => {
     const { password } = req.body;
 
     if (!(await user.checkPassword(password, user.password))) {
-        return next(new AppError('Wrong password', 401));
+        return next(new AppError('Incorrect password', 401));
     }
 
     user.active = false;
@@ -189,16 +190,18 @@ exports.reactivate = catchAsync(async (req, res, next) => {
     if (!user || !(await user.checkPassword(password, user.password))) {
         return next(new AppError('Incorrect email or password', 401));
     }
+
     if (user.active) {
-        return next(new AppError('Your account is active', 400));
+        return next(new AppError('Your account is already active.', 400));
     }
 
+    await ActivateToken.findOneAndDelete({ userId: user._id });
     const activateToken = createToken();
     await ActivateToken.create({ userId: user._id, token: activateToken });
 
     await sendEmail('Activate token', email, 'verification', {
         title: 'Reactivate your account',
-        link: buildLink(req, '/activate', activateToken),
+        link: buildLink(req, 'activate', activateToken),
         homeLink: buildLink(req, '/'),
     });
     res.status(200).json({
@@ -312,7 +315,7 @@ exports.me = catchAsync(async (req, res) => {
     user.password = undefined;
 
     res.status(200).json({
-        message: 'You was sign in successfully',
+        message: 'You were sign in successfully',
         data: { user, cart },
     });
 });

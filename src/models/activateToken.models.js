@@ -9,7 +9,6 @@ const ActivateTokenSchema = new mongoose.Schema(
                 "This field can't be empty please provide id of exiting user",
             ],
             ref: 'User',
-            unique: true,
         },
         token: {
             type: String,
