@@ -1,3 +1,4 @@
+// eslint-disable-next-line node/no-unpublished-require
 const request = require('supertest');
 const { connect, clearDatabase, closeDatabase } = require('./db');
 const { redisConnect, redisDisconnect } = require('../db/redis.js');

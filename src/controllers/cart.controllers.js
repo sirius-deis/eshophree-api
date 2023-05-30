@@ -3,13 +3,29 @@ const catchAsync = require('../utils/catchAsync');
 
 const Cart = require('../models/cart.models');
 
-exports.addToCart = catchAsync(async (req, res, next) => {
+exports.getCart = catchAsync(async (req, res, next) => {
+    const { cartId } = req.params;
+    const user = req.user;
+
+    const cart = await Cart.findById(cartId);
+    if (!cart) {
+        return next(new AppError('There is no cart with such id', 404));
+    }
+
+    if (!user._id.equals(cart.userId)) {
+        return next(new AppError("It's not your cart", 401));
+    }
+
+    res.status(200).json({ message: 'Cart was found', data: { user } });
+});
+
+exports.addToCart = catchAsync(async (req, res) => {
     const { productId } = req.params;
     const user = req.user;
     const { quantity } = req.body;
-    const cart = await Cart.findOne({ userId: user._id });
+    let cart = await Cart.findOne({ userId: user._id });
     if (!cart) {
-        return next(new AppError('You are not logged in', 404));
+        cart = await Cart.create({ userId: user._id });
     }
     const index = cart.products?.findIndex(product =>
         product.productId.equals(productId)
@@ -30,12 +46,9 @@ exports.addToCart = catchAsync(async (req, res, next) => {
 
 exports.decreaseProductsInCart = catchAsync(async (req, res, next) => {
     const { productId } = req.params;
-    const { quantityToDelete } = req.body;
+    const { quantityToDelete = 1 } = req.body;
     const user = req.user;
     const cart = await Cart.findOne({ userId: user._id });
-    if (!cart) {
-        return next(new AppError('You are not logged in', 404));
-    }
     const index = cart.products?.findIndex(product =>
         product.productId.equals(productId)
     );
@@ -53,12 +66,9 @@ exports.decreaseProductsInCart = catchAsync(async (req, res, next) => {
     res.status(204).send();
 });
 
-exports.clearCart = catchAsync(async (req, res, next) => {
+exports.clearCart = catchAsync(async (req, res) => {
     const user = req.user;
     const cart = await Cart.findOne({ userId: user._id });
-    if (!cart) {
-        return next(new AppError('You are not logged in', 404));
-    }
     cart.products = [];
 
     await cart.save();

@@ -9,6 +9,7 @@ const {
 } = require('../controllers/product.controllers');
 const reviewRouter = require('./review.routes');
 const discountRouter = require('./discount.routes');
+const cartRouter = require('./cart.routes');
 const auth = require('../middlewares/auth.middlewares');
 const validator = require('../middlewares/validation.middlwares');
 const { findProduct } = require('../middlewares/product.middlewares');
@@ -72,5 +73,6 @@ productRouter
 
 productRouter.use('/:productId/reviews', reviewRouter);
 productRouter.use('/:productId/discounts', discountRouter);
+productRouter.use('/:productId/carts', cartRouter);
 
 module.exports = productRouter;

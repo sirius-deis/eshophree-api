@@ -8,7 +8,7 @@ module.exports = ({
     body = {},
     statusCode = 404,
     done,
-    expectedResult = `Can't find ${route} on this server`,
+    expectedResult,
     isContentTypePresent = true,
     saveToken,
     token,
