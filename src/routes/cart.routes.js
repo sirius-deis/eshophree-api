@@ -20,7 +20,7 @@ cartRouter
     .route('/')
     .patch(
         isMongoId('productId'),
-        body('quantity').isInt({ gt: 1 }),
+        body('quantity').isInt({ gt: 0 }),
         validator,
         addToCart
     )

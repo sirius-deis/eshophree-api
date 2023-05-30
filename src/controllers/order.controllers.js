@@ -1,5 +1,9 @@
+/* eslint-disable camelcase */
+const { STRIPE_SECRET_KEY } = process.env;
+const stripe = require('stripe')(STRIPE_SECRET_KEY);
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+const Cart = require('../models/cart.models');
 const OrderDetail = require('../models/orderDetail.models');
 const OrderItem = require('../models/orderItem.models');
 const OrderStatus = require('../models/orderStatus.models');
@@ -40,23 +44,30 @@ exports.getOrder = catchAsync(async (req, res, next) => {
 
 exports.addOrder = catchAsync(async (req, res, next) => {
     const user = req.user;
-    const { comment, cart = [] } = req.body;
-    if (cart.length < 1) {
+    const { comment } = req.body;
+    const cart = await Cart.findOne({ userId: user._id }).populate(
+        'products.productId'
+    );
+    const products = cart.products;
+    if (!products || products.length < 1) {
         return next(
             new AppError("Cart can't be empty please choose products", 400)
         );
     }
-    const sum = cart.reduce((acc, curr) => acc + curr.price * curr.quantity, 0);
+    const sum = products.reduce(
+        (acc, curr) => acc + curr.price * curr.quantity,
+        0
+    );
 
     const orderStatus = await OrderStatus.create({
         statusCode: 'waiting',
         description: 'Some dummy text',
     });
     const orderItems = [];
-    for (let i = 0; i < cart.length; i++) {
+    for (let i = 0; i < products.length; i++) {
         const orderItem = await OrderItem.create({
-            productId: cart[i].productId,
-            quantity: cart[i].quantity,
+            productId: products[i].productId,
+            quantity: products[i].quantity,
         });
         orderItems.push({ orderItemId: orderItem._id });
     }
@@ -69,8 +80,32 @@ exports.addOrder = catchAsync(async (req, res, next) => {
         comment,
     });
 
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        customer_email: user.email,
+        line_items: products.map(product => {
+            return {
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: product.productId.name,
+                        description: product.productId.desc,
+                    },
+                    unit_amount: (
+                        product.productId.price.slice(1) * 100
+                    ).toFixed(0),
+                },
+                quantity: product.quantity,
+            };
+        }),
+        mode: 'payment',
+        success_url: `${req.protocol}://${req.get('host')}/checkout`,
+        cancel_url: `${req.protocol}://${req.get('host')}/checkout`,
+    });
+
     res.status(201).json({
         message: 'Products from cart were added to order successfully',
+        session,
     });
 });
 

@@ -10,13 +10,14 @@ exports.getCart = catchAsync(async (req, res, next) => {
     const cart = await Cart.findById(cartId);
     if (!cart) {
         return next(new AppError('There is no cart with such id', 404));
+        //.populate('products.productId')
     }
 
     if (!user._id.equals(cart.userId)) {
         return next(new AppError("It's not your cart", 401));
     }
 
-    res.status(200).json({ message: 'Cart was found', data: { user } });
+    res.status(200).json({ message: 'Cart was found', data: { cart } });
 });
 
 exports.addToCart = catchAsync(async (req, res) => {
