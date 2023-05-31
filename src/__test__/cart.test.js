@@ -83,6 +83,19 @@ describe('/carts', () => {
                 expectedResult: 'Product was successfully added to cart',
             });
         });
+        it('should add product to cart which exists there', done => {
+            makeRequest({
+                method: 'patch',
+                route: 'products/647057379cd597cc0c2c6f36/carts',
+                statusCode: 201,
+                body: {
+                    quantity: 1,
+                },
+                done,
+                token,
+                expectedResult: 'Product was successfully added to cart',
+            });
+        });
     });
 
     describe('/:productId route for deleting', () => {

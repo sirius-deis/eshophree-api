@@ -163,7 +163,7 @@ describe('/users', () => {
         it('should return 400 as activate token was incorrect', done => {
             makeRequest({
                 method: 'get',
-                route: 'activate/123',
+                route: 'users/activate/123',
                 statusCode: 400,
                 done,
                 expectedResult: 'Token verification failed',
@@ -527,6 +527,25 @@ describe('/users', () => {
             });
         });
 
+        it('Should return 400 as passwords are not the same', done => {
+            User.findOne({ email: 'test@test.com' }).then(user => {
+                ResetToken.findOne({ userId: user._id }).then(resetToken => {
+                    makeRequest({
+                        method: 'patch',
+                        route: `users/reset-password/${resetToken.token}`,
+                        body: {
+                            newPassword: 'password',
+                            newPasswordConfirm: 'password1',
+                        },
+                        statusCode: 400,
+                        done,
+                        expectedResult:
+                            'Passwords are not the same. Please provide correct passwords',
+                    });
+                });
+            });
+        });
+
         it('Should return 200', done => {
             User.findOne({ email: 'test@test.com' }).then(user => {
                 ResetToken.findOne({ userId: user._id }).then(resetToken => {
@@ -614,6 +633,60 @@ describe('/users', () => {
             });
         });
     });
+    describe('/update-info', () => {
+        it('should return 400', done => {
+            makeRequest({
+                method: 'patch',
+                route: `users/update-info`,
+                statusCode: 400,
+                body: {},
+                token,
+                expectedResult: 'Please provide information',
+                done,
+            });
+        });
+        it('should return 200', done => {
+            makeRequest({
+                method: 'patch',
+                route: `users/update-info`,
+                statusCode: 200,
+                body: {
+                    addressStreet: 'Some address in London',
+                    city: 'London',
+                },
+                token,
+                expectedResult: 'You information was successfully updated',
+                done,
+            });
+        });
+    });
+    describe('/update-payment', () => {
+        it('should return 400', done => {
+            makeRequest({
+                method: 'patch',
+                route: `users/update-payment`,
+                statusCode: 400,
+                body: {},
+                token,
+                expectedResult: 'Please provide information',
+                done,
+            });
+        });
+        it('should return 200', done => {
+            makeRequest({
+                method: 'patch',
+                route: `users/update-payment`,
+                statusCode: 200,
+                body: {
+                    paymentType: 'check',
+                    provider: 'Some provider',
+                },
+                token,
+                expectedResult: 'You information was successfully updated',
+                done,
+            });
+        });
+    });
     describe('/delete route', () => {
         it('should return 400 as field is incorrect', done => {
             makeRequest({
@@ -645,18 +718,17 @@ describe('/users', () => {
             });
         });
 
-        it('should return 200', done => {
-            console.log('TOKEN', token);
+        it('should return 204', done => {
             makeRequest({
                 method: 'delete',
                 route: `users/delete`,
                 body: {
-                    password: 'password',
+                    password: 'password123',
                 },
                 isContentTypePresent: false,
-                statusCode: 401,
+                statusCode: 204,
                 done,
-                expectedResult: 'Incorrect password',
+                expectedResult: undefined,
                 token,
             });
         });

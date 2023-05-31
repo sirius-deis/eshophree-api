@@ -287,13 +287,13 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     res.status(200).json({ message: 'Password was changed successfully' });
 });
 
-exports.logout = catchAsync(async (req, res) => {
+exports.logout = (req, res) => {
     const token = req.headers.authorization.match(/^Bearer (.*)$/)[1];
     const { userId, exp } = req;
     const expirationTime = (new Date(exp * 1000) - new Date()) / 1000;
     addTokenToBlocklist(userId, token, expirationTime);
     res.status(204).send();
-});
+};
 
 exports.deleteAccount = catchAsync(async (req, res, next) => {
     const user = req.user;
@@ -380,7 +380,11 @@ exports.updateUserPayment = catchAsync(async (req, res, next) => {
         return next(new AppError('Please provide information', 400));
     }
 
-    await UserPayment.findOneAndUpdate({ userId: user._id }, { ...map });
+    await UserPayment.findOneAndUpdate(
+        { userId: user._id },
+        { ...map },
+        { runValidators: true }
+    );
 
     res.status(200).json({
         message: 'You information was successfully updated',

@@ -118,23 +118,23 @@ exports.getProductById = catchAsync(async (req, res) => {
 exports.updateProduct = catchAsync(async (req, res, next) => {
     const product = req.product;
     //prettier-ignore
-    const { name, category, sku, price, brand, info, about, options, desc, images,
+    const { name, categoryId, sku, price, brandId, info, about, options, desc, images,
     } = req.body;
     //prettier-ignore
-    const map = addToMapIfValuesExist({ name, category, sku, price, brand, info, about, options, desc, images });
+    const map = addToMapIfValuesExist({ name, categoryId, sku, price, brandId, info, about, options, desc, images });
 
     if (!map) {
         return next(new AppError('Please provide all necessary fields', 400));
     }
 
-    await product.updateOne(map);
+    await product.updateOne(map, { runValidation: true });
 
-    res.status(200).json({ message: 'Project was updated successfully' });
+    res.status(200).json({ message: 'Product was updated successfully' });
 });
 
 exports.addProduct = catchAsync(async (req, res, next) => {
     //prettier-ignore
-    const { name, category, sku, price, brand, info, about, options, desc, images,
+    const { name, categoryId, sku, price, brandId, info, about, options, desc, images,
     } = req.body;
     //prettier-ignore
     if (!Array.isArray(info) && info.length < 1 || !Array.isArray(about) && about.length < 1 || !Array.isArray(options) &&
@@ -142,7 +142,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
         return next(new AppError('Please provide correct data', 400));
     }
     //prettier-ignore
-    await Product.create({ name, categoryId: category, sku, price, brandId: brand, info, about, options, desc, images});
+    await Product.create({ name, categoryId, sku, price, brandId, info, about, options, desc, images});
 
     res.status(201).json({ message: 'Product was added successfully' });
 });

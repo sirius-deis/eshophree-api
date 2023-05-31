@@ -19,6 +19,7 @@ const {
     isIntWithMin,
     isMongoId,
     isGreaterThan,
+    isMongoIdInBody,
 } = require('../utils/validator');
 
 const productRouter = express.Router();
@@ -39,14 +40,12 @@ productRouter
     .post(
         auth.isLoggedIn,
         auth.restrictTo('admin'),
+        isMongoIdInBody('categoryId'),
+        isMongoIdInBody('brandId'),
         isNthLength('name', 5),
-        isNthLength('text', 10),
-        isNthLength('category', 5),
-        isNthLength('brand', 2),
+        isNthLength('sku', 8),
         isPrice('price'),
-        isIntWithMin('stock', false, 1),
-        isNthLength('desc', 30, 256),
-        isNthLength('addition', 10, 256),
+        isNthLength('desc', 10, 256),
         validator,
         addProduct
     );

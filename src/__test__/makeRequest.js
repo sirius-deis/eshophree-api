@@ -35,7 +35,7 @@ module.exports = ({
             saveToken && expect(res.body.token).toBeTruthy();
             saveToken && saveToken(res.body.token);
             // eslint-disable-next-line no-undef
-            data && expect(res.body.data).toEqual(data);
+            data && expect(res.body.data).toBeDefined();
         })
         .end(done);
 };

@@ -11,6 +11,7 @@ exports.isIntWithMin = (field, isOptional = false, min = 0, max) =>
     body(field).optional(isOptional).isInt({ min, max });
 
 exports.isMongoId = field => param(field).isMongoId();
+exports.isMongoIdInBody = field => body(field).isMongoId();
 
 exports.isGreaterThan = (field, isOptional, gt) =>
     query(field).optional(isOptional).isInt({ gt });
