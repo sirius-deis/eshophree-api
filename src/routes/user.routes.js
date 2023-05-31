@@ -12,6 +12,8 @@ const {
     deactivate,
     updateMe,
     reactivate,
+    updateUserInfo,
+    updateUserPayment,
 } = require('../controllers/user.controllers');
 const auth = require('../middlewares/auth.middlewares');
 const validator = require('../middlewares/validation.middlwares');
@@ -58,13 +60,10 @@ userRouter.patch(
     validator,
     updatePassword
 );
-userRouter.patch(
-    '/update-me',
-    isNthLength('name'),
-    isNthLength('surname'),
-    validator,
-    updateMe
-);
+
+userRouter.patch('/update-me', validator, updateMe);
+userRouter.patch('/update-info', updateUserInfo);
+userRouter.patch('/update-payment', updateUserPayment);
 userRouter.post('/deactivate', isNthLength('password'), validator, deactivate);
 userRouter.get('/logout', logout);
 userRouter.get('/me', me);

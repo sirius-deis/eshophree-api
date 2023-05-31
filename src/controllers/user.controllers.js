@@ -3,6 +3,8 @@ const crypto = require('crypto');
 
 const AppError = require('../utils/appError');
 const User = require('../models/user.models');
+const UserInfo = require('../models/userInfo.models');
+const UserPayment = require('../models/userPayment.models');
 const Cart = require('../models/cart.models');
 const ResetToken = require('../models/resetToken.models');
 const ActivateToken = require('../models/activateToken.models');
@@ -300,8 +302,10 @@ exports.deleteAccount = catchAsync(async (req, res, next) => {
         return next(new AppError('Incorrect password', 401));
     }
 
-    await user.deleteOne();
     await Cart.deleteOne({ userId: user._id });
+    await UserInfo.findByIdAndDelete(user._id);
+    await UserPayment.findByIdAndDelete(user._id);
+    await user.deleteOne();
 
     res.status(204).send();
 });
@@ -339,5 +343,47 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
     res.status(200).json({
         message: 'Your data was updated successfully',
+    });
+});
+
+exports.updateUserInfo = catchAsync(async (req, res, next) => {
+    const user = req.user;
+    const { addressStreet, city, postalCode, country, telephone, mobile } =
+        req.body;
+
+    const map = addToObjectIfValuesExist({
+        addressStreet,
+        city,
+        postalCode,
+        country,
+        telephone,
+        mobile,
+    });
+
+    if (!map) {
+        return next(new AppError('Please provide information', 400));
+    }
+
+    await UserInfo.findOneAndUpdate({ userId: user._id }, { ...map });
+
+    res.status(200).json({
+        message: 'You information was successfully updated',
+    });
+});
+
+exports.updateUserPayment = catchAsync(async (req, res, next) => {
+    const user = req.user;
+    const { paymentType, provider } = req.body;
+
+    const map = addToObjectIfValuesExist(paymentType, provider);
+
+    if (!map) {
+        return next(new AppError('Please provide information', 400));
+    }
+
+    await UserPayment.findOneAndUpdate({ userId: user._id }, { ...map });
+
+    res.status(200).json({
+        message: 'You information was successfully updated',
     });
 });

@@ -7,10 +7,9 @@ exports.getCart = catchAsync(async (req, res, next) => {
     const { cartId } = req.params;
     const user = req.user;
 
-    const cart = await Cart.findById(cartId);
+    const cart = await Cart.findById(cartId).populate('products.productId');
     if (!cart) {
         return next(new AppError('There is no cart with such id', 404));
-        //.populate('products.productId')
     }
 
     if (!user._id.equals(cart.userId)) {

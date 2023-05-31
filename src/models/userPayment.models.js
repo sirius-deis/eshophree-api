@@ -19,6 +19,9 @@ const UserPaymentSchema = new mongoose.Schema(
                 'bank transfer',
             ],
         },
+        provider: {
+            type: String,
+        },
     },
     {
         collection: 'user-payment',
