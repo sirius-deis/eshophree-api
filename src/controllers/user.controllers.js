@@ -9,7 +9,7 @@ const Cart = require('../models/cart.models');
 const ResetToken = require('../models/resetToken.models');
 const ActivateToken = require('../models/activateToken.models');
 const sendEmail = require('../api/email');
-const { addToObjectIfValuesExist } = require('../utils/utils');
+const { addToMapIfValuesExist } = require('../utils/utils');
 const { getValue, setValue } = require('../db/redis');
 
 const catchAsync = require('../utils/catchAsync');
@@ -337,8 +337,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
         );
     }
 
-    const map = addToObjectIfValuesExist(name, surname);
-
+    const map = addToMapIfValuesExist(name, surname);
     await user.updateOne(map);
 
     res.status(200).json({
@@ -351,7 +350,7 @@ exports.updateUserInfo = catchAsync(async (req, res, next) => {
     const { addressStreet, city, postalCode, country, telephone, mobile } =
         req.body;
 
-    const map = addToObjectIfValuesExist({
+    const map = addToMapIfValuesExist({
         addressStreet,
         city,
         postalCode,
@@ -375,7 +374,7 @@ exports.updateUserPayment = catchAsync(async (req, res, next) => {
     const user = req.user;
     const { paymentType, provider } = req.body;
 
-    const map = addToObjectIfValuesExist(paymentType, provider);
+    const map = addToMapIfValuesExist(paymentType, provider);
 
     if (!map) {
         return next(new AppError('Please provide information', 400));

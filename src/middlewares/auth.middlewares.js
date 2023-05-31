@@ -50,7 +50,7 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
     next();
 });
 
-exports.restrictTo = requiredRole => {
+exports.restrictTo = (...requiredRoles) => {
     return (req, res, next) => {
         const user = req.user;
 
@@ -60,7 +60,7 @@ exports.restrictTo = requiredRole => {
             );
         }
 
-        if (user.role !== requiredRole) {
+        if (!requiredRoles.includes(user.role)) {
             return next(
                 new AppError("You don't have access to this route", 403)
             );

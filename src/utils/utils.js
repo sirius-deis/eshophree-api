@@ -1,4 +1,4 @@
-exports.addToObjectIfValuesExist = values => {
+exports.addToMapIfValuesExist = values => {
     const map = {};
     let isAdded = false;
     for (let key in values) {

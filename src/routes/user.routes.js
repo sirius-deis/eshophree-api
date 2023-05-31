@@ -61,7 +61,13 @@ userRouter.patch(
     updatePassword
 );
 
-userRouter.patch('/update-me', validator, updateMe);
+userRouter.patch(
+    '/update-me',
+    isNthLength('name'),
+    isNthLength('surname'),
+    validator,
+    updateMe
+);
 userRouter.patch('/update-info', updateUserInfo);
 userRouter.patch('/update-payment', updateUserPayment);
 userRouter.post('/deactivate', isNthLength('password'), validator, deactivate);

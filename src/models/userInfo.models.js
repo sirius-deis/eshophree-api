@@ -32,7 +32,7 @@ const UserInfoSchema = new mongoose.Schema(
         },
     },
     {
-        collection: 'user-info',
+        collection: 'users-info',
     }
 );
 

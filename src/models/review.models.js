@@ -31,6 +31,10 @@ const ReviewSchema = new mongoose.Schema(
             maxlength: [256, "Length can't be more than 256 characters"],
             minlength: [16, "Length can't be less than 16 characters"],
         },
+        approves: {
+            type: Number,
+            default: 0,
+        },
     },
     {
         toJSON: {

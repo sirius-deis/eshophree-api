@@ -12,6 +12,10 @@ const ProductCategorySchema = new mongoose.Schema(
             type: String,
             maxlength: [128, "Length can't be grater than 128 characters"],
         },
+        image: {
+            type: String,
+            required: true,
+        },
     },
     {
         collection: 'product-categories',

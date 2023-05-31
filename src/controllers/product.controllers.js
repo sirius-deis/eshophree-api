@@ -1,6 +1,6 @@
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const { addToObjectIfValuesExist } = require('../utils/utils');
+const { addToMapIfValuesExist } = require('../utils/utils');
 
 const Product = require('../models/product.models');
 const ProductCategory = require('../models/productCategory.models');
@@ -21,7 +21,7 @@ exports.getProductCategories = catchAsync(async (req, res) => {
 
 exports.getAllProducts = catchAsync(async (req, res, next) => {
     //prettier-ignore
-    const { limit = 10, page, category, brand, price, rating, sort, fields} = req.query;
+    const { limit = 10, page = 1, category, brand, price, rating, sort, fields, search} = req.query;
     const queryOptions = {};
 
     addToOptionsIfNotEmpty(queryOptions, 'categoryId', category);
@@ -55,6 +55,13 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
             { ratingAverage: { $gte: rating } },
             { ratingAverage: { $exists: 0 } },
         ];
+    }
+
+    if (search) {
+        queryOptions.name = {
+            $regex: search,
+            $options: 'i',
+        };
     }
 
     const skip = limit * (page - 1);
@@ -111,7 +118,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
     const { name, category, sku, price, brand, info, about, options, desc, images,
     } = req.body;
     //prettier-ignore
-    const map = addToObjectIfValuesExist({ name, category, sku, price, brand, info, about, options, desc, images });
+    const map = addToMapIfValuesExist({ name, category, sku, price, brand, info, about, options, desc, images });
 
     if (!map) {
         return next(new AppError('Please provide all necessary fields', 400));

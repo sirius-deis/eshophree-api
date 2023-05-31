@@ -668,6 +668,7 @@ describe('/all routes', () => {
         makeRequest({
             done,
             isContentTypePresent: false,
+            expectedResult: "Can't find /api/v1/wrong-route on this server",
         });
     });
 });

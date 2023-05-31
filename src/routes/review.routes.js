@@ -5,6 +5,8 @@ const {
     addReview,
     updateReview,
     deleteReview,
+    rateReview,
+    unrateReview,
 } = require('../controllers/review.controllers');
 const validator = require('../middlewares/validation.middlwares');
 const { isIntWithMin, isNthLength, isMongoId } = require('../utils/validator');
@@ -26,13 +28,17 @@ reviewRouter
     );
 
 reviewRouter
-    .route('/:reviewId')
+    .route('/:reviewId', validator)
     .patch(
         isIntWithMin('rating', true, 1, 5),
         isNthLength('comment', 4, 256),
-        validator,
         updateReview
     )
-    .delete(validator, deleteReview);
+    .delete(deleteReview);
+
+reviewRouter
+    .route('/:reviewId/rates', validator)
+    .patch(rateReview)
+    .delete(unrateReview);
 
 module.exports = reviewRouter;

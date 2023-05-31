@@ -24,7 +24,7 @@ const UserPaymentSchema = new mongoose.Schema(
         },
     },
     {
-        collection: 'user-payment',
+        collection: 'users-payment',
     }
 );
 

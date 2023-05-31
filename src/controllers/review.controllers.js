@@ -1,7 +1,8 @@
-const Review = require('../models/review.models');
-
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+
+const Review = require('../models/review.models');
+const ReviewRating = require('../models/reviewRating.models');
 
 const chooseReviewFields = fields => {
     const map = {};
@@ -108,4 +109,53 @@ exports.updateReview = catchAsync(async (req, res, next) => {
     await review.save();
 
     res.status(200).json({ message: 'Your review was successfully updated' });
+});
+
+exports.rateReview = catchAsync(async (req, res, next) => {
+    const user = req.user;
+    const { reviewId } = req.params;
+    const { rating } = req.body;
+    if (rating !== 1 || rating !== -1) {
+        return next(
+            new AppError('Wrong value. This value is not allowed', 400)
+        );
+    }
+
+    const review = await Review.findById(reviewId);
+
+    if (!review) {
+        return next(new AppError('There is no review with such id', 404));
+    }
+
+    const reviewRating = await ReviewRating.findOne({ userId: user._id });
+    if (reviewRating) {
+        if (reviewRating.userId === user._id) {
+            return next(new AppError("You can't rate your own reviews", 400));
+        }
+        reviewRating.rating = rating;
+        await reviewRating.save({ validateBeforeSave: true });
+    } else {
+        await ReviewRating.create({
+            userId: user._id,
+            reviewId,
+        });
+    }
+
+    res.status(201).json({ message: 'Review was rated successfully' });
+});
+
+exports.unrateReview = catchAsync(async (req, res, next) => {
+    const user = req.user;
+    const { reviewId } = req.params;
+
+    const reviewRating = await ReviewRating.findOne({
+        userId: user._id,
+        reviewId,
+    });
+
+    if (!reviewRating) {
+        return next(new AppError('There is no review with such id', 404));
+    }
+
+    res.json(204).send();
 });
