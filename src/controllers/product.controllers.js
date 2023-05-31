@@ -16,7 +16,10 @@ const addToOptionsIfNotEmpty = (options, key, value) => {
 exports.getProductCategories = catchAsync(async (req, res) => {
     const productCategory = await ProductCategory.find();
 
-    res.status(200).json({ message: '', data: { productCategory } });
+    res.status(200).json({
+        message: 'Categories were found successfully',
+        data: { productCategory },
+    });
 });
 
 exports.getAllProducts = catchAsync(async (req, res, next) => {

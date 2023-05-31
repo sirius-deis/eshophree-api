@@ -32,7 +32,7 @@ describe('/users', () => {
     describe('/signup route', () => {
         it('should return 400 as body is empty', done => {
             makeRequest({
-                route: '/api/v1/users/signup',
+                route: 'users/signup',
                 statusCode: 400,
                 done,
                 expectedResult: [
@@ -47,7 +47,7 @@ describe('/users', () => {
 
         it('should return 400 as body is empty', done => {
             makeRequest({
-                route: '/api/v1/users/signup',
+                route: 'users/signup',
                 body: { name: 'test name' },
                 statusCode: 400,
                 done,
@@ -62,7 +62,7 @@ describe('/users', () => {
 
         it('should return 400 as body is empty', done => {
             makeRequest({
-                route: '/api/v1/users/signup',
+                route: 'users/signup',
                 body: { name: 'test name', surname: 'test surname' },
                 statusCode: 400,
                 done,
@@ -76,7 +76,7 @@ describe('/users', () => {
 
         it('should return 400 as body is empty', done => {
             makeRequest({
-                route: '/api/v1/users/signup',
+                route: 'users/signup',
                 body: {
                     name: 'test name',
                     surname: 'test surname',
@@ -94,7 +94,7 @@ describe('/users', () => {
 
         it('should return 400 as passwords are not the same', done => {
             makeRequest({
-                route: '/api/v1/users/signup',
+                route: 'users/signup',
                 body: {
                     name: 'test name',
                     surname: 'test surname',
@@ -111,7 +111,7 @@ describe('/users', () => {
 
         it('should successfully register a new account', done => {
             makeRequest({
-                route: '/api/v1/users/signup',
+                route: 'users/signup',
                 body: {
                     name: 'test name',
                     surname: 'test surname',
@@ -128,7 +128,7 @@ describe('/users', () => {
 
         it('should return an error as email is already in use', done => {
             makeRequest({
-                route: '/api/v1/users/signup',
+                route: 'users/signup',
                 body: {
                     name: 'test name',
                     surname: 'test surname',
@@ -144,7 +144,7 @@ describe('/users', () => {
 
         it('should successfully register second account for addition tests purpose', done => {
             makeRequest({
-                route: '/api/v1/users/signup',
+                route: 'users/signup',
                 body: {
                     name: 'test name',
                     surname: 'test surname',
@@ -163,7 +163,7 @@ describe('/users', () => {
         it('should return 400 as activate token was incorrect', done => {
             makeRequest({
                 method: 'get',
-                route: '/api/v1/users/activate/123',
+                route: 'activate/123',
                 statusCode: 400,
                 done,
                 expectedResult: 'Token verification failed',
@@ -177,7 +177,7 @@ describe('/users', () => {
                 }).then(activateToken => {
                     makeRequest({
                         method: 'get',
-                        route: `/api/v1/users/activate/${activateToken.token}`,
+                        route: `users/activate/${activateToken.token}`,
                         statusCode: 200,
                         done,
                         expectedResult:
@@ -194,7 +194,7 @@ describe('/users', () => {
                 }).then(activateToken => {
                     makeRequest({
                         method: 'get',
-                        route: `/api/v1/users/activate/${activateToken.token}`,
+                        route: `users/activate/${activateToken.token}`,
                         statusCode: 200,
                         done,
                         expectedResult:
@@ -207,7 +207,7 @@ describe('/users', () => {
     describe('/login route', () => {
         it('should return 400 as there are not valid fields in body', done => {
             makeRequest({
-                route: '/api/v1/users/login',
+                route: 'users/login',
                 statusCode: 400,
                 done,
                 expectedResult: [
@@ -219,7 +219,7 @@ describe('/users', () => {
 
         it('should return 401 as password was incorrect', done => {
             makeRequest({
-                route: '/api/v1/users/login',
+                route: 'users/login',
                 statusCode: 401,
                 body: {
                     email: 'test@test.com',
@@ -232,7 +232,7 @@ describe('/users', () => {
 
         it('should return 200 after successful logging in', done => {
             makeRequest({
-                route: '/api/v1/users/login',
+                route: 'users/login',
                 statusCode: 200,
                 body: {
                     email: 'test@test.com',
@@ -246,7 +246,7 @@ describe('/users', () => {
 
         it('should return 200 after successful logging in', done => {
             makeRequest({
-                route: '/api/v1/users/login',
+                route: 'users/login',
                 statusCode: 200,
                 body: {
                     email: 'test2@test.com',
@@ -261,7 +261,7 @@ describe('/users', () => {
     describe('/deactivate route', () => {
         it('should return 401 code as there is no access to this route unless you are logged in', done => {
             makeRequest({
-                route: `/api/v1/users/deactivate`,
+                route: `users/deactivate`,
                 statusCode: 401,
                 done,
                 expectedResult: 'Sign in before trying to access this route',
@@ -270,7 +270,7 @@ describe('/users', () => {
 
         it('should return 400 code as password is empty', done => {
             makeRequest({
-                route: `/api/v1/users/deactivate`,
+                route: `users/deactivate`,
                 statusCode: 400,
                 done,
                 expectedResult: [
@@ -282,7 +282,7 @@ describe('/users', () => {
 
         it('should return 401 code as password is incorrect', done => {
             makeRequest({
-                route: `/api/v1/users/deactivate`,
+                route: `users/deactivate`,
                 statusCode: 401,
                 body: {
                     password: 'password12',
@@ -295,7 +295,7 @@ describe('/users', () => {
 
         it('Should successfully deactivate account', done => {
             makeRequest({
-                route: `/api/v1/users/deactivate`,
+                route: `users/deactivate`,
                 statusCode: 200,
                 body: {
                     password: 'password123',
@@ -309,7 +309,7 @@ describe('/users', () => {
     describe('/reactivate route', () => {
         it('should return 401 as email is empty', done => {
             makeRequest({
-                route: `/api/v1/users/reactivate`,
+                route: `users/reactivate`,
                 body: {
                     email: '',
                 },
@@ -324,7 +324,7 @@ describe('/users', () => {
 
         it('should return 401 as password is empty', done => {
             makeRequest({
-                route: `/api/v1/users/reactivate`,
+                route: `users/reactivate`,
                 body: {
                     email: 'test@test.com',
                     password: '',
@@ -339,7 +339,7 @@ describe('/users', () => {
 
         it("should return 401 as passwords don't match", done => {
             makeRequest({
-                route: `/api/v1/users/reactivate`,
+                route: `users/reactivate`,
                 body: {
                     email: 'test@test.com',
                     password: 'password',
@@ -352,7 +352,7 @@ describe('/users', () => {
 
         it('should return 400 as account is activated already', done => {
             makeRequest({
-                route: `/api/v1/users/reactivate`,
+                route: `users/reactivate`,
                 body: {
                     email: 'test@test.com',
                     password: 'password123',
@@ -365,7 +365,7 @@ describe('/users', () => {
 
         it('should return 200  ', done => {
             makeRequest({
-                route: `/api/v1/users/reactivate`,
+                route: `users/reactivate`,
                 body: {
                     email: 'test2@test.com',
                     password: 'password123',
@@ -380,7 +380,7 @@ describe('/users', () => {
         it('should return 400 as there are incorrect fields', done => {
             makeRequest({
                 method: 'patch',
-                route: `/api/v1/users/update-password`,
+                route: `users/update-password`,
                 statusCode: 400,
                 done,
                 expectedResult: [
@@ -395,7 +395,7 @@ describe('/users', () => {
         it('should return 401 as password is wrong', done => {
             makeRequest({
                 method: 'patch',
-                route: `/api/v1/users/update-password`,
+                route: `users/update-password`,
                 body: {
                     password: 'password',
                     newPassword: 'password1',
@@ -411,7 +411,7 @@ describe('/users', () => {
         it('should return 400 as new password and confirm password are not the same', done => {
             makeRequest({
                 method: 'patch',
-                route: `/api/v1/users/update-password`,
+                route: `users/update-password`,
                 body: {
                     password: 'password123',
                     newPassword: 'password12',
@@ -428,7 +428,7 @@ describe('/users', () => {
         it('should return 200', done => {
             makeRequest({
                 method: 'patch',
-                route: `/api/v1/users/update-password`,
+                route: `users/update-password`,
                 body: {
                     password: 'password123',
                     newPassword: 'password',
@@ -445,7 +445,7 @@ describe('/users', () => {
     describe('/forget-password route', () => {
         it('should return 400 with invalid data', done => {
             makeRequest({
-                route: `/api/v1/users/forget-password`,
+                route: `users/forget-password`,
                 body: {
                     email: 'email123',
                 },
@@ -459,7 +459,7 @@ describe('/users', () => {
 
         it('should return 404 as there is no such email', done => {
             makeRequest({
-                route: `/api/v1/users/forget-password`,
+                route: `users/forget-password`,
                 body: {
                     email: 'test123@test.com',
                 },
@@ -471,7 +471,7 @@ describe('/users', () => {
 
         it('should return 200 as there is such email', done => {
             makeRequest({
-                route: `/api/v1/users/forget-password`,
+                route: `users/forget-password`,
                 body: {
                     email: 'test@test.com',
                 },
@@ -485,7 +485,7 @@ describe('/users', () => {
         it('should return 400 with invalid data', done => {
             makeRequest({
                 method: 'patch',
-                route: `/api/v1/users/reset-password/123`,
+                route: `users/reset-password/123`,
                 statusCode: 400,
                 done,
                 expectedResult: [
@@ -497,7 +497,7 @@ describe('/users', () => {
         it('should return 400 as token is invalid', done => {
             makeRequest({
                 method: 'patch',
-                route: `/api/v1/users/reset-password/123`,
+                route: `users/reset-password/123`,
                 statusCode: 400,
                 body: {
                     newPassword: 'password',
@@ -513,7 +513,7 @@ describe('/users', () => {
                 ResetToken.findOne({ userId: user._id }).then(resetToken => {
                     makeRequest({
                         method: 'patch',
-                        route: `/api/v1/users/reset-password/${resetToken.token}`,
+                        route: `users/reset-password/${resetToken.token}`,
                         body: {
                             newPassword: 'password',
                             newPasswordConfirm: 'password',
@@ -532,7 +532,7 @@ describe('/users', () => {
                 ResetToken.findOne({ userId: user._id }).then(resetToken => {
                     makeRequest({
                         method: 'patch',
-                        route: `/api/v1/users/reset-password/${resetToken.token}`,
+                        route: `users/reset-password/${resetToken.token}`,
                         body: {
                             newPassword: 'password123',
                             newPasswordConfirm: 'password123',
@@ -555,7 +555,7 @@ describe('/users', () => {
             }).then(() => {
                 makeRequest({
                     method: 'get',
-                    route: `/api/v1/users/me`,
+                    route: `users/me`,
                     statusCode: 200,
                     done,
                     expectedResult: 'You were sign in successfully',
@@ -568,7 +568,7 @@ describe('/users', () => {
         it('should return 400 as fields are incorrect', done => {
             makeRequest({
                 method: 'patch',
-                route: `/api/v1/users/update-me`,
+                route: `users/update-me`,
                 body: {
                     name: '',
                     surname: '',
@@ -586,7 +586,7 @@ describe('/users', () => {
         it("should return 400 as fields haven't changed", done => {
             makeRequest({
                 method: 'patch',
-                route: `/api/v1/users/update-me`,
+                route: `users/update-me`,
                 body: {
                     name: 'test name',
                     surname: 'test surname',
@@ -602,7 +602,7 @@ describe('/users', () => {
         it('should return 200', done => {
             makeRequest({
                 method: 'patch',
-                route: `/api/v1/users/update-me`,
+                route: `users/update-me`,
                 body: {
                     name: 'new test name',
                     surname: 'new test surname',
@@ -618,7 +618,7 @@ describe('/users', () => {
         it('should return 400 as field is incorrect', done => {
             makeRequest({
                 method: 'delete',
-                route: `/api/v1/users/delete`,
+                route: `users/delete`,
                 body: {
                     password: '',
                 },
@@ -634,7 +634,7 @@ describe('/users', () => {
         it('should return 401 as password is incorrect', done => {
             makeRequest({
                 method: 'delete',
-                route: `/api/v1/users/delete`,
+                route: `users/delete`,
                 body: {
                     password: 'password3',
                 },
@@ -649,7 +649,7 @@ describe('/users', () => {
             console.log('TOKEN', token);
             makeRequest({
                 method: 'delete',
-                route: `/api/v1/users/delete`,
+                route: `users/delete`,
                 body: {
                     password: 'password',
                 },

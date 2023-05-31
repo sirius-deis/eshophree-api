@@ -46,10 +46,10 @@ describe('/carts', () => {
     });
 
     describe('/:cartId route', () => {
-        it('should return cart', done => {
+        it('should return 404 as cartId is incorrect', done => {
             makeRequest({
                 method: 'get',
-                route: `/api/v1/carts/647057379cd597cc0c2c6f36`,
+                route: `carts/647057379cd597cc0c2c6f36`,
                 statusCode: 404,
                 done,
                 token,
@@ -60,7 +60,7 @@ describe('/carts', () => {
         it('should return cart', done => {
             makeRequest({
                 method: 'get',
-                route: `/api/v1/carts/${cart._id}`,
+                route: `carts/${cart._id}`,
                 statusCode: 200,
                 done,
                 token,
@@ -73,7 +73,7 @@ describe('/carts', () => {
         it('should add product to cart', done => {
             makeRequest({
                 method: 'patch',
-                route: '/api/v1/products/647057399cd597cc0c2c737e/carts',
+                route: 'products/647057399cd597cc0c2c737e/carts',
                 statusCode: 201,
                 body: {
                     quantity: 2,
@@ -89,7 +89,7 @@ describe('/carts', () => {
         it("should return 400 as quantity can't be negative", done => {
             makeRequest({
                 method: 'delete',
-                route: '/api/v1/products/647057399cd597cc0c2c7299/carts',
+                route: 'products/647057399cd597cc0c2c7299/carts',
                 statusCode: 400,
                 body: { quantityToDelete: -1 },
                 done,
@@ -104,7 +104,7 @@ describe('/carts', () => {
         it('should return 404 as there is no such product', done => {
             makeRequest({
                 method: 'delete',
-                route: '/api/v1/products/647057399cd597cc0c2c637e/carts',
+                route: 'products/647057399cd597cc0c2c637e/carts',
                 statusCode: 404,
                 body: { quantityToDelete: 1 },
                 done,
@@ -117,7 +117,7 @@ describe('/carts', () => {
         it('should delete product from cart', done => {
             makeRequest({
                 method: 'delete',
-                route: '/api/v1/products/647057399cd597cc0c2c7299/carts',
+                route: 'products/647057399cd597cc0c2c7299/carts',
                 statusCode: 204,
                 body: { quantityToDelete: 2 },
                 done,
@@ -131,7 +131,7 @@ describe('/carts', () => {
         it('should clear cart', done => {
             makeRequest({
                 method: 'delete',
-                route: '/api/v1/carts/clear',
+                route: 'carts/clear',
                 statusCode: 204,
                 done,
                 token,

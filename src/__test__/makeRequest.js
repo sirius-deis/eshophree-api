@@ -4,7 +4,7 @@ const app = require('../app');
 
 module.exports = ({
     method = 'post',
-    route = '/api/v1/wrong-route',
+    route = 'wrong-route',
     body = {},
     statusCode = 404,
     done,
@@ -12,8 +12,9 @@ module.exports = ({
     isContentTypePresent = true,
     saveToken,
     token,
+    data,
 }) => {
-    let partial = request(app)[method](route).type('json');
+    let partial = request(app)[method](`/api/v1/${route}`).type('json');
 
     if (token) {
         partial = partial.set('Authorization', `Bearer ${token}`);
@@ -33,6 +34,8 @@ module.exports = ({
             // eslint-disable-next-line no-undef
             saveToken && expect(res.body.token).toBeTruthy();
             saveToken && saveToken(res.body.token);
+            // eslint-disable-next-line no-undef
+            data && expect(res.body.data).toEqual(data);
         })
         .end(done);
 };
