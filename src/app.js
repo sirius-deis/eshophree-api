@@ -19,14 +19,14 @@ const globalErrorHandler = require('./controllers/error.controllers');
 const app = express();
 
 const corsOptions = {
-    origin: true,
-    credentials: true,
+  origin: true,
+  credentials: true,
 };
 
 const limiter = rateLimit({
-    max: 1000,
-    windowMs: 60 * 60 * 1000,
-    message: 'Too many request from this IP, please try again in an hour',
+  max: 1000,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many request from this IP, please try again in an hour',
 });
 
 app.enable('trust proxy');
@@ -48,7 +48,7 @@ app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/orders', orderRouter);
 
 app.all('*', (req, res, next) => {
-    next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
+  next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
 
 app.use(globalErrorHandler);

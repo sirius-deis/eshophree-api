@@ -1,12 +1,8 @@
 const express = require('express');
 const { isMongoId } = require('../utils/validator');
 
-const {
-    getDiscount,
-    addDiscount,
-    deleteDiscount,
-    updateDiscount,
-} = require('../controllers/discount.controllers');
+// eslint-disable-next-line object-curly-newline
+const { getDiscount, addDiscount, deleteDiscount, updateDiscount } = require('../controllers/discount.controllers');
 const { isLoggedIn, restrictTo } = require('../middlewares/auth.middlewares');
 const { findProduct } = require('../middlewares/product.middlewares');
 const validator = require('../middlewares/validation.middlwares');
@@ -21,9 +17,9 @@ discountRouter.use(isMongoId('productId'));
 discountRouter.use(validator);
 
 discountRouter
-    .route('/')
-    .post(findProduct, addDiscount)
-    .patch(findProduct, updateDiscount)
-    .delete(findProduct, deleteDiscount);
+  .route('/')
+  .post(findProduct, addDiscount)
+  .patch(findProduct, updateDiscount)
+  .delete(findProduct, deleteDiscount);
 
 module.exports = discountRouter;

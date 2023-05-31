@@ -1,26 +1,35 @@
 {
-    "env": {
-        "node": true,
-        "commonjs": true,
-        "es2021": true
-    },
-    "extends": ["eslint:recommended", "plugin:node/recommended", "prettier"],
-    "overrides": [
-        {
-            "files": "./src/__test__/*.test.js",
-            "env": { "jest": true }
-        }
-    ],
-    "parserOptions": {
-        "ecmaVersion": "latest"
-    },
-    // "ignorePatterns": ["/src/__test__/*.test.js"],
-    "rules": {
-        "no-console": "warn",
-        "semi": "error",
-        "camelcase": "error",
-        "comma-spacing": "warn",
-        "no-unused-vars": "error"
-    },
-    "plugins": ["prettier"]
+  "env": {
+    "node": true,
+    "commonjs": true,
+    "es2021": true
+  },
+  "extends": ["eslint:recommended", "plugin:node/recommended", "prettier", "airbnb"],
+  "overrides": [
+    {
+      "files": "./src/__test__/*.test.js",
+      "env": { "jest": true }
+    }
+  ],
+  "parserOptions": {
+    "ecmaVersion": "latest"
+  },
+  // "ignorePatterns": ["/src/__test__/*.test.js"],
+  "rules": {
+    "spaced-comment": "off",
+    "no-console": "warn",
+    "consistent-return": "off",
+    "func-names": "off",
+    "object-shorthand": "off",
+    "no-process-exit": "off",
+    "no-param-reassign": "off",
+    "no-return-await": "off",
+    "no-underscore-dangle": "off",
+    "prefer-destructuring": ["error", { "object": true, "array": false }],
+    "semi": "error",
+    "camelcase": "error",
+    "comma-spacing": "warn",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "req|res|next" }]
+  },
+  "plugins": ["prettier"]
 }

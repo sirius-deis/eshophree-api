@@ -6,150 +6,148 @@ const Product = require('../models/product.models');
 const ProductCategory = require('../models/productCategory.models');
 
 const addToOptionsIfNotEmpty = (options, key, value) => {
-    if (value && typeof value === 'string') {
-        options[key] = { $all: [value] };
-    } else if (Array.isArray(value)) {
-        options[key] = { $all: [...value] };
-    }
+  if (value && typeof value === 'string') {
+    options[key] = { $all: [value] };
+  } else if (Array.isArray(value)) {
+    options[key] = { $all: [...value] };
+  }
 };
 
 exports.getProductCategories = catchAsync(async (req, res) => {
-    const productCategory = await ProductCategory.find();
+  const productCategory = await ProductCategory.find();
 
-    res.status(200).json({
-        message: 'Categories were found successfully',
-        data: { productCategory },
-    });
+  res.status(200).json({
+    message: 'Categories were found successfully',
+    data: { productCategory },
+  });
 });
 
 exports.getAllProducts = catchAsync(async (req, res, next) => {
-    //prettier-ignore
-    const { limit = 10, page = 1, category, brand, price, rating, sort, fields, search} = req.query;
-    const queryOptions = {};
+  //prettier-ignore
+  const { limit = 10, page = 1, category, brand, price, rating, sort, fields, search} = req.query;
+  const queryOptions = {};
 
-    addToOptionsIfNotEmpty(queryOptions, 'categoryId', category);
-    addToOptionsIfNotEmpty(queryOptions, 'brandId', brand);
+  addToOptionsIfNotEmpty(queryOptions, 'categoryId', category);
+  addToOptionsIfNotEmpty(queryOptions, 'brandId', brand);
 
-    if (price) {
-        const operatorsMap = {
-            '<': '$lt',
-            '<=': '$lte',
-            '=': '$eq',
-            '>': '$gt',
-            '>=': '$gte',
+  if (price) {
+    const operatorsMap = {
+      '<': '$lt',
+      '<=': '$lte',
+      '=': '$eq',
+      '>': '$gt',
+      '>=': '$gte',
+    };
+
+    const filters = price.replace(/(<|<=|=|>|>=)/g, (match) => `-${operatorsMap[match]}:`);
+
+    queryOptions.price = filters
+      .slice(1)
+      .split('-')
+      .reduce((acc, filter) => {
+        const filterArr = filter.split(':');
+        acc[filterArr[0]] = filterArr[1];
+        return acc;
+      }, {});
+  }
+
+  if (rating) {
+    queryOptions.$or = [{ ratingAverage: { $gte: rating } }, { ratingAverage: { $exists: 0 } }];
+  }
+
+  if (search) {
+    queryOptions.name = {
+      $regex: search,
+      $options: 'i',
+    };
+  }
+
+  const skip = limit * (page - 1);
+
+  const fieldsToSelect = {};
+
+  if (fields) {
+    fields.split(',').forEach((field) => {
+      if (field === 'images') {
+        fieldsToSelect[field] = {
+          $slice: 1,
         };
+      } else {
+        fieldsToSelect[field] = 1;
+      }
+    });
+  }
 
-        const filters = price.replace(/(<|<=|=|>|>=)/g, match => {
-            return `-${operatorsMap[match]}:`;
-        });
+  const products = await Product.find(queryOptions, fieldsToSelect)
+    .skip(skip)
+    .limit(limit)
+    .sort((sort && sort.replace(/[, ]/g, ' ')) || 'createdAt')
+    .populate({
+      path: 'discount',
+      options: {
+        select: {
+          percent: 1,
+        },
+      },
+    });
 
-        queryOptions.price = filters
-            .slice(1)
-            .split('-')
-            .reduce((acc, filter) => {
-                const filterArr = filter.split(':');
-                acc[filterArr[0]] = filterArr[1];
-                return acc;
-            }, {});
-    }
+  if (products.length < 1) {
+    return next(new AppError('There are no products left', 200));
+  }
 
-    if (rating) {
-        queryOptions.$or = [
-            { ratingAverage: { $gte: rating } },
-            { ratingAverage: { $exists: 0 } },
-        ];
-    }
-
-    if (search) {
-        queryOptions.name = {
-            $regex: search,
-            $options: 'i',
-        };
-    }
-
-    const skip = limit * (page - 1);
-
-    const fieldsToSelect = {};
-
-    if (fields) {
-        fields.split(',').forEach(field => {
-            if (field === 'images') {
-                fieldsToSelect[field] = {
-                    $slice: 1,
-                };
-            } else {
-                fieldsToSelect[field] = 1;
-            }
-        });
-    }
-
-    const products = await Product.find(queryOptions, fieldsToSelect)
-        .skip(skip)
-        .limit(limit)
-        .sort((sort && sort.replace(/[, ]/g, ' ')) || 'createdAt')
-        .populate({
-            path: 'discount',
-            options: {
-                select: {
-                    percent: 1,
-                },
-            },
-        });
-
-    if (products.length < 1) {
-        return next(new AppError('There are no products left', 200));
-    }
-
-    res.status(200).json({ message: 'Products were found', data: products });
+  res.status(200).json({ message: 'Products were found', data: products });
 });
 
 exports.getProductById = catchAsync(async (req, res) => {
-    const product = await req.product.populate({
-        path: 'discount',
-        options: {
-            select: {
-                percent: 1,
-            },
-        },
-    });
-    res.status(200).json({ message: 'Product was found', data: product });
+  const product = await req.product.populate({
+    path: 'discount',
+    options: {
+      select: {
+        percent: 1,
+      },
+    },
+  });
+  res.status(200).json({ message: 'Product was found', data: product });
 });
 
 exports.updateProduct = catchAsync(async (req, res, next) => {
-    const product = req.product;
-    //prettier-ignore
-    const { name, categoryId, sku, price, brandId, info, about, options, desc, images,
-    } = req.body;
-    //prettier-ignore
-    const map = addToMapIfValuesExist({ name, categoryId, sku, price, brandId, info, about, options, desc, images });
+  const { product } = req;
+  //prettier-ignore
+  const { name, categoryId, sku, price, brandId, info, about, options, desc, images,
+  } = req.body;
+  //prettier-ignore
+  // eslint-disable-next-line max-len
+  const map = addToMapIfValuesExist({ name, categoryId, sku, price, brandId, info, about, options, desc, images });
 
-    if (!map) {
-        return next(new AppError('Please provide all necessary fields', 400));
-    }
+  if (!map) {
+    return next(new AppError('Please provide all necessary fields', 400));
+  }
 
-    await product.updateOne(map, { runValidation: true });
+  await product.updateOne(map, { runValidation: true });
 
-    res.status(200).json({ message: 'Product was updated successfully' });
+  res.status(200).json({ message: 'Product was updated successfully' });
 });
 
 exports.addProduct = catchAsync(async (req, res, next) => {
-    //prettier-ignore
-    const { name, categoryId, sku, price, brandId, info, about, options, desc, images,
-    } = req.body;
-    //prettier-ignore
-    if (!Array.isArray(info) && info.length < 1 || !Array.isArray(about) && about.length < 1 || !Array.isArray(options) &&
-        options.length < 1 || Array.isArray(images) && images.length < 1) {
-        return next(new AppError('Please provide correct data', 400));
-    }
-    //prettier-ignore
-    await Product.create({ name, categoryId, sku, price, brandId, info, about, options, desc, images});
+  //prettier-ignore
+  const { name, categoryId, sku, price, brandId, info, about, options, desc, images,
+  } = req.body;
+  //prettier-ignore
+  // eslint-disable-next-line max-len
+  if (!Array.isArray(info) && info.length < 1 || !Array.isArray(about) && about.length < 1 || !Array.isArray(options) &&
+    options.length < 1 || Array.isArray(images) && images.length < 1) {
+    return next(new AppError('Please provide correct data', 400));
+  }
+  //prettier-ignore
+  // eslint-disable-next-line max-len
+  await Product.create({ name, categoryId, sku, price, brandId, info, about, options, desc, images});
 
-    res.status(201).json({ message: 'Product was added successfully' });
+  res.status(201).json({ message: 'Product was added successfully' });
 });
 
 exports.removeProduct = catchAsync(async (req, res) => {
-    const product = req.product;
-    await product.deleteOne();
+  const { product } = req;
+  await product.deleteOne();
 
-    res.status(204).send();
+  res.status(204).send();
 });

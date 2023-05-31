@@ -1,10 +1,6 @@
 const express = require('express');
-const {
-    getOrder,
-    addOrder,
-    updateOrderComment,
-    discardOrder,
-} = require('../controllers/order.controllers');
+// eslint-disable-next-line object-curly-newline
+const { getOrder, addOrder, updateOrderComment, discardOrder } = require('../controllers/order.controllers');
 
 const { isLoggedIn } = require('../middlewares/auth.middlewares');
 const { isMongoId, isNthLength } = require('../utils/validator');
@@ -17,14 +13,9 @@ orderRouter.use(isLoggedIn);
 orderRouter.route('/').post(addOrder);
 
 orderRouter
-    .route('/:orderId')
-    .get(isMongoId('orderId'), validator, getOrder)
-    .patch(
-        isMongoId('orderId'),
-        isNthLength('comment', 5, 256),
-        validator,
-        updateOrderComment
-    )
-    .delete(isMongoId('orderId'), validator, discardOrder);
+  .route('/:orderId')
+  .get(isMongoId('orderId'), validator, getOrder)
+  .patch(isMongoId('orderId'), isNthLength('comment', 5, 256), validator, updateOrderComment)
+  .delete(isMongoId('orderId'), validator, discardOrder);
 
 module.exports = orderRouter;
