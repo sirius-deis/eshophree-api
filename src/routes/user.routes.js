@@ -15,7 +15,7 @@ const {
   updateUserInfo,
   updateUserPayment,
 } = require('../controllers/user.controllers');
-const auth = require('../middlewares/auth.middlewares');
+const { isLoggedIn } = require('../middlewares/auth.middlewares');
 const validator = require('../middlewares/validation.middlwares');
 const { isEmail, isNthLength } = require('../utils/validator');
 
@@ -44,7 +44,7 @@ userRouter.patch(
   resetPassword,
 );
 
-userRouter.use(auth.isLoggedIn);
+userRouter.use(isLoggedIn);
 
 userRouter.patch(
   '/update-password',

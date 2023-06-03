@@ -12,6 +12,7 @@ const productRouter = require('./routes/product.routes');
 const cartRouter = require('./routes/cart.routes');
 const reviewRouter = require('./routes/review.routes');
 const orderRouter = require('./routes/order.routes');
+const subscriptionRouter = require('./routes/subscription.routes');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/error.controllers');
@@ -46,6 +47,7 @@ app.use('/api/v1/products', productRouter);
 app.use('/api/v1/carts', cartRouter);
 app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/orders', orderRouter);
+app.use('/api/v1/subscriptions', subscriptionRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

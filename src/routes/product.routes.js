@@ -10,7 +10,7 @@ const {
 const reviewRouter = require('./review.routes');
 const discountRouter = require('./discount.routes');
 const cartRouter = require('./cart.routes');
-const auth = require('../middlewares/auth.middlewares');
+const { isLoggedIn, restrictTo } = require('../middlewares/auth.middlewares');
 const validator = require('../middlewares/validation.middlwares');
 const { findProduct } = require('../middlewares/product.middlewares');
 // eslint-disable-next-line object-curly-newline
@@ -32,8 +32,8 @@ productRouter
     getAllProducts,
   )
   .post(
-    auth.isLoggedIn,
-    auth.restrictTo('admin'),
+    isLoggedIn,
+    restrictTo('admin'),
     isMongoIdInBody('categoryId'),
     isMongoIdInBody('brandId'),
     isNthLength('name', 5),
@@ -47,8 +47,8 @@ productRouter
 productRouter
   .route('/:productId')
   .get(isMongoId('productId'), validator, findProduct, getProductById)
-  .patch(auth.isLoggedIn, auth.restrictTo('admin'), isMongoId('productId'), validator, findProduct, updateProduct)
-  .delete(auth.isLoggedIn, auth.restrictTo('admin'), isMongoId('productId'), validator, findProduct, removeProduct);
+  .patch(isLoggedIn, restrictTo('admin'), isMongoId('productId'), validator, findProduct, updateProduct)
+  .delete(isLoggedIn, restrictTo('admin'), isMongoId('productId'), validator, findProduct, removeProduct);
 
 productRouter.use('/:productId/reviews', reviewRouter);
 productRouter.use('/:productId/discounts', discountRouter);

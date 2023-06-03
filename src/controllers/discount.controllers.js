@@ -4,7 +4,10 @@ const Discount = require('../models/discount.models');
 
 exports.getDiscount = catchAsync(async (req, res, next) => {
   const { product } = req;
-  const discount = await Discount.findById({ productId: product._id });
+  if (!product.discountId) {
+    return next(new AppError('There is no discount for this product', 404));
+  }
+  const discount = await Discount.findById({ _id: product.discountId });
   if (!discount) {
     return next(new AppError('There is no such discount with this product', 404));
   }
@@ -50,11 +53,7 @@ exports.updateDiscount = catchAsync(async (req, res, next) => {
   const { percent, till } = req.body;
   const { product } = req;
 
-  const discount = await Discount.findByIdAndUpdate(
-    product.discountId,
-    { till, percent },
-    { runValidators: true },
-  );
+  const discount = await Discount.findByIdAndUpdate(product.discountId, { till, percent }, { runValidators: true });
 
   if (!discount) {
     return next(new AppError('There is no such discount with this product', 404));

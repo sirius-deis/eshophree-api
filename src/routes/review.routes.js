@@ -1,5 +1,5 @@
 const express = require('express');
-const auth = require('../middlewares/auth.middlewares');
+const { isLoggedIn } = require('../middlewares/auth.middlewares');
 const {
   getReviews,
   addReview,
@@ -13,7 +13,7 @@ const { isIntWithMin, isNthLength, isMongoId } = require('../utils/validator');
 
 const reviewRouter = express.Router({ mergeParams: true });
 
-reviewRouter.use(auth.isLoggedIn);
+reviewRouter.use(isLoggedIn);
 
 reviewRouter.use(isMongoId('productId'));
 
