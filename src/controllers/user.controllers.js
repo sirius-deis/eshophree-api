@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
 
 const AppError = require('../utils/appError');
 const User = require('../models/user.models');
@@ -11,6 +10,7 @@ const ActivateToken = require('../models/activateToken.models');
 const sendEmail = require('../api/email');
 const { addToMapIfValuesExist } = require('../utils/utils');
 const { getValue, setValue } = require('../db/redis');
+const { createToken } = require('../utils/utils');
 
 const catchAsync = require('../utils/catchAsync');
 
@@ -31,11 +31,6 @@ const deleteResetTokenIfExist = async (userId) => {
   if (token) {
     await token.deleteOne();
   }
-};
-
-const createToken = () => {
-  const resetToken = crypto.randomBytes(32).toString('hex');
-  return resetToken;
 };
 
 const sendResponseWithNewToken = (res, statusCode, data, userId) => {

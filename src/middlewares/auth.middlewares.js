@@ -22,7 +22,6 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
   }
 
   const user = await User.findById(payload.id).select('+password +passwordChangedAt');
-
   if (!user) {
     return next(new AppError('Sign in before trying to access this route', 401));
   }

@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 exports.addToMapIfValuesExist = (values) => {
   const map = {};
   let isAdded = false;
@@ -9,4 +11,9 @@ exports.addToMapIfValuesExist = (values) => {
     }
   }
   return isAdded && map;
+};
+
+exports.createToken = () => {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  return resetToken;
 };

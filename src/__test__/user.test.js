@@ -1,16 +1,14 @@
-// eslint-disable-next-line node/no-unpublished-require
-const request = require('supertest');
 const { connect, clearDatabase, closeDatabase } = require('./db');
 const { redisConnect, redisDisconnect } = require('../db/redis');
 const User = require('../models/user.models');
 const ActivateToken = require('../models/activateToken.models');
 const ResetToken = require('../models/resetToken.models');
-const app = require('../app');
 const makeRequest = require('./makeRequest');
 
 describe('/users', () => {
   let token = '';
   let token2 = '';
+  let token3 = '';
   beforeAll(async () => {
     await connect();
     await redisConnect();
@@ -250,6 +248,19 @@ describe('/users', () => {
         done,
         expectedResult: 'You was sign in successfully',
         saveToken: (value) => (token2 = value),
+      });
+    });
+    it('should return 200 after successful logging in', (done) => {
+      makeRequest({
+        route: 'users/login',
+        statusCode: 200,
+        body: {
+          email: 'user@test.com',
+          password: 'password123',
+        },
+        done,
+        expectedResult: 'You was sign in successfully',
+        saveToken: (value) => (token3 = value),
       });
     });
   });
@@ -558,21 +569,13 @@ describe('/users', () => {
   });
   describe('/me route', () => {
     it('should return 200', (done) => {
-      // eslint-disable-next-line arrow-body-style
-      Promise.resolve(() => {
-        return request(app)
-          .post('/api/v1/users/login')
-          .send({ email: 'test@test.com', password: 'password' })
-          .expect((res) => (token = res.body.token));
-      }).then(() => {
-        makeRequest({
-          method: 'get',
-          route: 'users/me',
-          statusCode: 200,
-          done,
-          expectedResult: 'You were sign in successfully',
-          token,
-        });
+      makeRequest({
+        method: 'get',
+        route: 'users/me',
+        statusCode: 200,
+        done,
+        expectedResult: 'You were sign in successfully',
+        token: token3,
       });
     });
   });
@@ -591,7 +594,7 @@ describe('/users', () => {
           "Invalid value. Field 'name' with value '' doesn't pass validation. Please provide correct data",
           "Invalid value. Field 'surname' with value '' doesn't pass validation. Please provide correct data",
         ],
-        token,
+        token: token3,
       });
     });
 
@@ -606,7 +609,7 @@ describe('/users', () => {
         statusCode: 400,
         done,
         expectedResult: 'Please change at least one field to access this route',
-        token,
+        token: token3,
       });
     });
 
@@ -621,7 +624,7 @@ describe('/users', () => {
         statusCode: 200,
         done,
         expectedResult: 'Your data was updated successfully',
-        token,
+        token: token3,
       });
     });
   });
@@ -632,7 +635,7 @@ describe('/users', () => {
         route: 'users/update-info',
         statusCode: 400,
         body: {},
-        token,
+        token: token3,
         expectedResult: 'Please provide information',
         done,
       });
@@ -646,7 +649,7 @@ describe('/users', () => {
           addressStreet: 'Some address in London',
           city: 'London',
         },
-        token,
+        token: token3,
         expectedResult: 'You information was successfully updated',
         done,
       });
@@ -659,7 +662,7 @@ describe('/users', () => {
         route: 'users/update-payment',
         statusCode: 400,
         body: {},
-        token,
+        token: token3,
         expectedResult: 'Please provide information',
         done,
       });
@@ -673,7 +676,7 @@ describe('/users', () => {
           paymentType: 'check',
           provider: 'Some provider',
         },
-        token,
+        token: token3,
         expectedResult: 'You information was successfully updated',
         done,
       });
@@ -692,7 +695,7 @@ describe('/users', () => {
         expectedResult: [
           "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
         ],
-        token,
+        token: token3,
       });
     });
 
@@ -706,7 +709,7 @@ describe('/users', () => {
         statusCode: 401,
         done,
         expectedResult: 'Incorrect password',
-        token,
+        token: token3,
       });
     });
 
@@ -721,7 +724,7 @@ describe('/users', () => {
         statusCode: 204,
         done,
         expectedResult: undefined,
-        token,
+        token: token3,
       });
     });
   });

@@ -6,6 +6,10 @@ const SubscriptionSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  tokenToUnsubscribe: {
+    type: String,
+    unique: true,
+  },
 });
 
 const Subscription = mongoose.model('Subscription', SubscriptionSchema);
