@@ -104,13 +104,11 @@ describe('/carts', () => {
         method: 'delete',
         route: 'products/647057399cd597cc0c2c7299/carts',
         statusCode: 400,
-        body: { quantityToDelete: -1 },
+        body: { quantityToDelete: -2 },
         done,
         token,
         isContentTypePresent: false,
-        expectedResult: [
-          "Invalid value. Field 'quantityToDelete' with value '-1' doesn't pass validation. Please provide correct data",
-        ],
+        expectedResult: "Quantity can't be a negative value",
       });
     });
 

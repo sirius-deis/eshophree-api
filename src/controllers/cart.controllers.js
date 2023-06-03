@@ -19,10 +19,13 @@ exports.getCart = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: 'Cart was found', data: { cart } });
 });
 
-exports.addToCart = catchAsync(async (req, res) => {
+exports.addToCart = catchAsync(async (req, res, next) => {
   const { productId } = req.params;
   const { user } = req;
   const { quantity } = req.body;
+  if (quantity < 1) {
+    return next(new AppError("Quantity can't be a negative value", 400));
+  }
   let cart = await Cart.findOne({ userId: user._id });
   if (!cart) {
     cart = await Cart.create({ userId: user._id });
@@ -45,6 +48,9 @@ exports.addToCart = catchAsync(async (req, res) => {
 exports.decreaseProductsInCart = catchAsync(async (req, res, next) => {
   const { productId } = req.params;
   const { quantityToDelete = 1 } = req.body;
+  if (quantityToDelete < 1) {
+    return next(new AppError("Quantity can't be a negative value", 400));
+  }
   const { user } = req;
   const cart = await Cart.findOne({ userId: user._id });
   const index = cart.products?.findIndex((product) => product.productId.equals(productId));

@@ -12,6 +12,7 @@ describe('/discounts', () => {
   let product;
   let product2;
   let product3;
+  let token;
   beforeAll(async () => {
     await connect();
     await redisConnect();
@@ -42,7 +43,19 @@ describe('/discounts', () => {
       ratingAverage: 5,
       discountId: '64777d65c584ff331b39ee4e',
     });
+
+    await User.create({
+      email: 'test@test.com',
+      password: 'password123',
+      role: 'admin',
+      active: true,
+    });
+    const response = await request(app)
+      .post('/api/v1/users/login')
+      .send({ email: 'test@test.com', password: 'password123' });
+    token = response.body.token;
   });
+
   afterAll(async () => {
     await clearDatabase();
     await closeDatabase();
@@ -83,6 +96,159 @@ describe('/discounts', () => {
         statusCode: 200,
         expectedResult: 'Discount was fount successfully',
         done,
+      });
+    });
+  });
+  describe('/ post', () => {
+    it("should return 401 as user don't have access to this route", (done) => {
+      makeRequest({
+        method: 'post',
+        route: 'products/6443a5541c7998fe4bdebd26/discounts',
+        statusCode: 401,
+        expectedResult: 'Sign in before trying to access this route',
+        done,
+      });
+    });
+    it('should return 404 as there is no such product', (done) => {
+      makeRequest({
+        method: 'post',
+        route: 'products/6443a5541c7998fe4bdebd26/discounts',
+        statusCode: 404,
+        expectedResult: 'There is no product with such id. Please try again',
+        done,
+        token,
+      });
+    });
+    it('should return 400 as there is incorrect values', (done) => {
+      makeRequest({
+        method: 'post',
+        route: `products/${product._id}/discounts`,
+        body: {},
+        statusCode: 400,
+        expectedResult: 'Please provide valid data',
+        done,
+        token,
+      });
+    });
+    it('should return 400 as there is incorrect values', (done) => {
+      makeRequest({
+        method: 'post',
+        route: `products/${product._id}/discounts`,
+        body: {},
+        statusCode: 400,
+        expectedResult: 'Please provide valid data',
+        done,
+        token,
+      });
+    });
+    it('should return 400 as there is incorrect values', (done) => {
+      makeRequest({
+        method: 'post',
+        route: `products/${product._id}/discounts`,
+        body: {
+          percent: 30,
+          till: '2023-9-12',
+        },
+        statusCode: 400,
+        expectedResult: 'Please provide valid data',
+        done,
+        token,
+      });
+    });
+    it('should return 200 and create a new discount for instead existed one', (done) => {
+      makeRequest({
+        method: 'post',
+        route: `products/${product._id}/discounts`,
+        body: {
+          percent: 20,
+          till: '2023-09-10',
+        },
+        statusCode: 201,
+        expectedResult: 'Discount was successfully added',
+        done,
+        token,
+      });
+    });
+  });
+  describe('/ patch', () => {
+    it("should return 401 as user don't have access to this route", (done) => {
+      makeRequest({
+        method: 'patch',
+        route: 'products/6443a5541c7998fe4bdebd26/discounts',
+        statusCode: 401,
+        expectedResult: 'Sign in before trying to access this route',
+        done,
+      });
+    });
+    it('should return 404 as there is no such product', (done) => {
+      makeRequest({
+        method: 'patch',
+        route: 'products/6443a5541c7998fe4bdebd26/discounts',
+        statusCode: 404,
+        expectedResult: 'There is no product with such id. Please try again',
+        done,
+        token,
+      });
+    });
+    it('should return 404 as there is no such product', (done) => {
+      makeRequest({
+        method: 'patch',
+        route: `products/${product2._id}/discounts`,
+        statusCode: 404,
+        expectedResult: 'There is no such discount with this product',
+        done,
+        token,
+      });
+    });
+    it('should return 200 as there is no such product', (done) => {
+      makeRequest({
+        method: 'patch',
+        route: `products/${product._id}/discounts`,
+        statusCode: 200,
+        expectedResult: 'Discount was successfully updated',
+        done,
+        token,
+      });
+    });
+  });
+  describe('/ delete', () => {
+    it("should return 401 as user don't have access to this route", (done) => {
+      makeRequest({
+        method: 'delete',
+        route: 'products/6443a5541c7998fe4bdebd26/discounts',
+        statusCode: 401,
+        expectedResult: 'Sign in before trying to access this route',
+        done,
+      });
+    });
+    it('should return 404 as there is no such product', (done) => {
+      makeRequest({
+        method: 'delete',
+        route: 'products/6443a5541c7998fe4bdebd26/discounts',
+        statusCode: 404,
+        expectedResult: 'There is no product with such id. Please try again',
+        done,
+        token,
+      });
+    });
+    it('should return 404 as there is no such discount', (done) => {
+      makeRequest({
+        method: 'delete',
+        route: `products/${product2._id}/discounts`,
+        statusCode: 404,
+        expectedResult: 'There is no such discount for this product',
+        done,
+        token,
+      });
+    });
+    it('should return 204', (done) => {
+      makeRequest({
+        method: 'delete',
+        route: `products/${product._id}/discounts`,
+        statusCode: 204,
+        isContentTypePresent: false,
+        done,
+        token,
       });
     });
   });

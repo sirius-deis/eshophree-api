@@ -4,7 +4,7 @@ const { body } = require('express-validator');
 const { getCart, addToCart, clearCart, decreaseProductsInCart } = require('../controllers/cart.controllers');
 const { isLoggedIn } = require('../middlewares/auth.middlewares');
 const validator = require('../middlewares/validation.middlwares');
-const { isMongoId } = require('../utils/validator');
+const { isMongoId, isGreaterThan } = require('../utils/validator');
 
 const cartRouter = express.Router({ mergeParams: true });
 
@@ -14,9 +14,19 @@ cartRouter.delete('/clear', clearCart);
 
 cartRouter
   .route('/')
-  .patch(isMongoId('productId'), body('quantity').isInt({ gt: 0 }), validator, addToCart)
-  .delete(isMongoId('productId'), body('quantityToDelete').isInt({ gt: 0 }), validator, decreaseProductsInCart);
+  .patch(
+    isMongoId({ field: 'productId' }),
+    isGreaterThan({ field: 'quantity', gt: 0, isOptional: true }),
+    validator,
+    addToCart,
+  )
+  .delete(
+    isMongoId({ field: 'productId' }),
+    isGreaterThan({ field: 'quantityToDelete', gt: 0, isOptional: true }),
+    validator,
+    decreaseProductsInCart,
+  );
 
-cartRouter.route('/:cartId').get(isMongoId('cartId'), validator, getCart);
+cartRouter.route('/:cartId').get(isMongoId({ field: 'cartId' }), validator, getCart);
 
 module.exports = cartRouter;

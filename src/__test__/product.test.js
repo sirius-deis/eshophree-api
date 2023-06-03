@@ -17,8 +17,6 @@ describe('/products', () => {
     await User.create({
       email: 'test@test.com',
       password: 'password123',
-      name: 'test name',
-      surname: 'test surname',
       role: 'admin',
       active: true,
     });

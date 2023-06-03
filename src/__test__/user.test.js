@@ -35,8 +35,6 @@ describe('/users', () => {
         done,
         expectedResult: [
           "Invalid value. Field 'email' with value 'undefined' doesn't pass validation. Please provide correct data",
-          "Invalid value. Field 'name' with value '' doesn't pass validation. Please provide correct data",
-          "Invalid value. Field 'surname' with value '' doesn't pass validation. Please provide correct data",
           "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
           "Invalid value. Field 'passwordConfirm' with value '' doesn't pass validation. Please provide correct data",
         ],
@@ -51,7 +49,6 @@ describe('/users', () => {
         done,
         expectedResult: [
           "Invalid value. Field 'email' with value 'undefined' doesn't pass validation. Please provide correct data",
-          "Invalid value. Field 'surname' with value '' doesn't pass validation. Please provide correct data",
           "Invalid value. Field 'password' with value '' doesn't pass validation. Please provide correct data",
           "Invalid value. Field 'passwordConfirm' with value '' doesn't pass validation. Please provide correct data",
         ],

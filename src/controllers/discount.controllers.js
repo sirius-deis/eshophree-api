@@ -18,14 +18,16 @@ exports.getDiscount = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.addDiscount = catchAsync(async (req, res) => {
+exports.addDiscount = catchAsync(async (req, res, next) => {
   const { percent, till } = req.body;
   const { product } = req;
 
-  await Discount.findOneAndDelete({ productId: product._id });
+  if (!percent || !/\d{4}-\d{2}-\d{2}/.test(till)) {
+    return next(new AppError('Please provide valid data', 400));
+  }
 
+  await Discount.findOneAndDelete({ _id: product.discountId });
   const discount = await Discount.create({
-    productId: product._id,
     percent,
     till: new Date(till),
   });
@@ -43,7 +45,7 @@ exports.deleteDiscount = catchAsync(async (req, res, next) => {
   const discount = await Discount.findByIdAndDelete(product.discountId);
 
   if (!discount) {
-    return next(new AppError('There is no such discount with this product', 404));
+    return next(new AppError('There is no such discount for this product', 404));
   }
 
   res.status(204).send();
@@ -59,5 +61,5 @@ exports.updateDiscount = catchAsync(async (req, res, next) => {
     return next(new AppError('There is no such discount with this product', 404));
   }
 
-  res.status(204).json({ message: 'Discount was successfully deleted' });
+  res.status(200).json({ message: 'Discount was successfully updated' });
 });

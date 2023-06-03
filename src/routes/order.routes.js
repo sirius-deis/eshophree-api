@@ -15,7 +15,7 @@ orderRouter.route('/').post(addOrder);
 orderRouter
   .route('/:orderId')
   .get(isMongoId('orderId'), validator, getOrder)
-  .patch(isMongoId('orderId'), isNthLength('comment', 5, 256), validator, updateOrderComment)
+  .patch(isMongoId('orderId'), isNthLength({ field: 'comment', min: 5, max: 256 }), validator, updateOrderComment)
   .delete(isMongoId('orderId'), validator, discardOrder);
 
 module.exports = orderRouter;

@@ -13,7 +13,7 @@ discountRouter.route('/').get(findProduct, getDiscount);
 
 discountRouter.use(isLoggedIn);
 discountRouter.use(restrictTo('admin'));
-discountRouter.use(isMongoId('productId'));
+discountRouter.use(isMongoId({ field: 'productId' }));
 discountRouter.use(validator);
 
 discountRouter
