@@ -13,29 +13,28 @@ const { isIntWithMin, isNthLength, isMongoId } = require('../utils/validator');
 
 const reviewRouter = express.Router({ mergeParams: true });
 
-reviewRouter.use(isLoggedIn);
-
 reviewRouter.use(isMongoId({ field: 'productId' }));
 
 reviewRouter
   .route('/')
   .get(getReviews)
   .post(
+    isLoggedIn,
     isIntWithMin({ field: 'rating', isOptional: false, min: 1, max: 5 }),
     isNthLength({ field: 'comment', min: 4, max: 256 }),
     validator,
     addReview,
-  );
-
-reviewRouter
-  .route('/:reviewId', validator)
+  )
   .patch(
+    isLoggedIn,
     isIntWithMin({ field: 'rating', isOptional: true, min: 1, max: 5 }),
     isNthLength({ field: 'comment', min: 4, max: 256 }),
     updateReview,
   )
-  .delete(deleteReview);
+  .delete(isLoggedIn, deleteReview);
 
-reviewRouter.route('/:reviewId/rates', validator).patch(rateReview).delete(unrateReview);
+reviewRouter.use(isLoggedIn);
+
+reviewRouter.route('/:reviewId', validator).patch(rateReview).delete(unrateReview);
 
 module.exports = reviewRouter;

@@ -23,7 +23,7 @@ const ReviewSchema = new mongoose.Schema(
     comment: {
       type: String,
       maxlength: [256, "Length can't be more than 256 characters"],
-      minlength: [16, "Length can't be less than 16 characters"],
+      minlength: [4, "Length can't be less than 16 characters"],
     },
     approves: {
       type: Number,

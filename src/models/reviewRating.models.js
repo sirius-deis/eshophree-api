@@ -23,7 +23,7 @@ const ReviewRatingSchema = new mongoose.Schema(
   },
 );
 
-ReviewRatingSchema.static.calcRating = async function (reviewId) {
+ReviewRatingSchema.statics.calcRating = async function (reviewId) {
   const reviewsRating = await this.aggregate([
     {
       $match: {

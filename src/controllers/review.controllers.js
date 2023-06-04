@@ -20,7 +20,7 @@ const chooseReviewFields = (fields) => {
 exports.getReviews = catchAsync(async (req, res, next) => {
   const { productId } = req.params;
   const reviews = await Review.find({ productId });
-  if (reviews.length) {
+  if (!reviews.length) {
     return next(new AppError('There is no review on this product', 404));
   }
   res.status(200).json({
@@ -34,9 +34,9 @@ exports.addReview = catchAsync(async (req, res, next) => {
   const { productId } = req.params;
   const { rating, comment } = req.body;
 
-  const reviewEntity = await Review.findOne({ userId: user._id, productId });
+  const review = await Review.findOne({ userId: user._id, productId });
 
-  if (reviewEntity) {
+  if (review) {
     return next(new AppError("You can't add more than one review to each product.", 400));
   }
 
@@ -52,15 +52,12 @@ exports.addReview = catchAsync(async (req, res, next) => {
 
 exports.deleteReview = catchAsync(async (req, res, next) => {
   const { user } = req;
-  const { reviewId } = req.params;
+  const { productId } = req.params;
 
-  const review = await Review.findById(reviewId);
+  const review = await Review.findOneAndRemove({ userId: user._id, productId });
+
   if (!review) {
     next(new AppError('There is no review with such id', 404));
-  }
-
-  if (review.userId !== user._id) {
-    return next(new AppError("You don't have enough rights to delete this review.", 402));
   }
 
   await review.deleteOne();
@@ -71,16 +68,12 @@ exports.deleteReview = catchAsync(async (req, res, next) => {
 exports.updateReview = catchAsync(async (req, res, next) => {
   const { user } = req;
   const { rating, comment } = req.body;
-  const { reviewId } = req.params;
+  const { productId } = req.params;
 
-  const review = await Review.findById(reviewId);
+  const review = await Review.findOne({ userId: user._id, productId });
 
   if (!review) {
-    return next(new AppError('There is no review with such id', 404));
-  }
-
-  if (review.userId !== user._id) {
-    return next(new AppError("You don't have enough rights to delete this review.", 402));
+    return next(new AppError('There is no review for such product', 404));
   }
 
   const fields = chooseReviewFields({ rating, comment });
@@ -102,7 +95,7 @@ exports.rateReview = catchAsync(async (req, res, next) => {
   const { user } = req;
   const { reviewId } = req.params;
   const { rating } = req.body;
-  if (rating !== 1 || rating !== -1) {
+  if (rating !== 1 && rating !== -1) {
     return next(new AppError('Wrong value. This value is not allowed', 400));
   }
 
@@ -112,17 +105,19 @@ exports.rateReview = catchAsync(async (req, res, next) => {
     return next(new AppError('There is no review with such id', 404));
   }
 
+  if (review.userId.equals(user._id)) {
+    return next(new AppError("You can't rate your own reviews", 400));
+  }
+
   const reviewRating = await ReviewRating.findOne({ userId: user._id });
   if (reviewRating) {
-    if (reviewRating.userId === user._id) {
-      return next(new AppError("You can't rate your own reviews", 400));
-    }
     reviewRating.rating = rating;
     await reviewRating.save({ validateBeforeSave: true });
   } else {
     await ReviewRating.create({
       userId: user._id,
       reviewId,
+      rating,
     });
   }
 
@@ -142,5 +137,5 @@ exports.unrateReview = catchAsync(async (req, res, next) => {
     return next(new AppError('There is no review with such id', 404));
   }
 
-  res.json(204).send();
+  res.status(204).send();
 });
