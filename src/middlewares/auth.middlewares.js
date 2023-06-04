@@ -5,6 +5,37 @@ const AppError = require('../utils/appError');
 const User = require('../models/user.models');
 const { getValue } = require('../db/redis');
 
+exports.getUser = catchAsync(async (req, res, next) => {
+  const token = req.headers.authorization && req.headers.authorization.match(/^Bearer (.*)$/)[1];
+  if (!token) {
+    return next();
+  }
+  const payload = jwt.verify(token, process.env.JWT_SECRET);
+  if (!payload) {
+    return next();
+  }
+
+  const blockedToken = await getValue(payload.id, token);
+
+  if (blockedToken) {
+    return next();
+  }
+
+  const user = await User.findById(payload.id).select('+password +passwordChangedAt');
+  if (!user) {
+    return next();
+  }
+
+  if (new Date(payload.iat * 1000) < user.passwordChangedAt) {
+    return next();
+  }
+
+  req.user = user;
+  req.userId = user._id;
+  req.exp = payload.exp;
+  next();
+});
+
 exports.isLoggedIn = catchAsync(async (req, res, next) => {
   const token = req.headers.authorization && req.headers.authorization.match(/^Bearer (.*)$/)[1];
   if (!token) {

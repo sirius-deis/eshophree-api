@@ -7,7 +7,7 @@ const Subscription = require('../models/subscription.models');
 const app = require('../app');
 const makeRequest = require('./makeRequest');
 
-describe('/discounts', () => {
+describe('/subscription', () => {
   let token;
   let token2;
   beforeAll(async () => {

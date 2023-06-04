@@ -5,8 +5,8 @@ const OrderDetailSchema = new mongoose.Schema(
     userId: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'User',
-      required: [true, "This field can't be empty. Please provide valid id od exiting user"],
     },
+    email: String,
     price: {
       type: Number,
       min: 1,

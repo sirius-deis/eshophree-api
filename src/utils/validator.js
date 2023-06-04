@@ -1,6 +1,6 @@
 const { body, param, query } = require('express-validator');
 
-exports.isEmail = () => body('email').isEmail().escape();
+exports.isEmail = (isOptional = false) => body('email').optional(isOptional).isEmail().escape();
 
 exports.isNthLength = ({ field, isOptional = false, min = 4, max }) =>
   body(field).optional(isOptional).trim().isLength({ min, max }).escape();
