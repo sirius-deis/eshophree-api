@@ -13,6 +13,7 @@ describe('/discounts', () => {
   let product2;
   let product3;
   let token;
+  let token2;
   beforeAll(async () => {
     await connect();
     await redisConnect();
@@ -50,10 +51,20 @@ describe('/discounts', () => {
       role: 'admin',
       active: true,
     });
+    await User.create({
+      email: 'test2@test.com',
+      password: 'password123',
+      role: 'user',
+      active: true,
+    });
     const response = await request(app)
       .post('/api/v1/users/login')
       .send({ email: 'test@test.com', password: 'password123' });
     token = response.body.token;
+    const response2 = await request(app)
+      .post('/api/v1/users/login')
+      .send({ email: 'test2@test.com', password: 'password123' });
+    token2 = response2.body.token;
   });
 
   afterAll(async () => {
@@ -167,6 +178,20 @@ describe('/discounts', () => {
         expectedResult: 'Discount was successfully added',
         done,
         token,
+      });
+    });
+    it('should return 403 as user is not an admin', (done) => {
+      makeRequest({
+        method: 'post',
+        route: `products/${product._id}/discounts`,
+        body: {
+          percent: 20,
+          till: '2023-09-10',
+        },
+        statusCode: 403,
+        expectedResult: "You don't have access to this route",
+        done,
+        token: token2,
       });
     });
   });

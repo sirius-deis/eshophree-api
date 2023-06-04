@@ -22,9 +22,7 @@ exports.unsubscribe = catchAsync(async (req, res, next) => {
   }
   await subscriber.deleteOne();
 
-  res.status(200).json({
-    message: 'You were unsubscribed from our news successfully',
-  });
+  res.status(204).send();
 });
 
 exports.send = catchAsync(async (req, res, next) => {

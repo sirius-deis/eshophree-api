@@ -11,6 +11,6 @@ subscriptionRouter.route('/').post(isEmail(), validator, subscribe);
 
 subscriptionRouter.post('/send', isLoggedIn, restrictTo('admin'), send);
 
-subscriptionRouter.route('/:token').post(unsubscribe);
+subscriptionRouter.route('/:token').delete(unsubscribe);
 
 module.exports = subscriptionRouter;

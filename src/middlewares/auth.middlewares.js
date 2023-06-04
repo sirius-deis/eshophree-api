@@ -40,7 +40,6 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
 exports.restrictTo = (...requiredRoles) => {
   return (req, res, next) => {
     const { user } = req;
-
     if (!user) {
       return next(new AppError('Sign in before trying to access this route', 401));
     }
