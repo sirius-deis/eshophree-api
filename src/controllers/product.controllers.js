@@ -119,8 +119,9 @@ exports.getProductVendorsList = catchAsync(async (req, res) => {
 });
 
 exports.addProductVendor = catchAsync(async (req, res) => {
+  // eslint-disable-next-line max-len
   const { companyCode, name, description, addressStreet, addressCity, addressPostalCode } = req.body;
-
+  // eslint-disable-next-line max-len
   await ProductVendor.create({ companyCode, name, description, addressStreet, addressCity, addressPostalCode });
 
   res.status(201).json({
@@ -130,6 +131,7 @@ exports.addProductVendor = catchAsync(async (req, res) => {
 
 exports.editProductVendor = catchAsync(async (req, res, next) => {
   const { productVendorId } = req.params;
+  // eslint-disable-next-line max-len
   const { companyCode, name, description, addressStreet, addressCity, addressPostalCode } = req.body;
 
   const productVendor = await ProductVendor.findByIdAndUpdate(productVendorId, {
@@ -218,6 +220,8 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
     });
   }
 
+  const documentCount = await Product.countDocuments({ queryOptions });
+
   const products = await Product.find(queryOptions, fieldsToSelect)
     .skip(skip)
     .limit(limit)
@@ -235,7 +239,7 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
     return next(new AppError('There are no products left', 200));
   }
 
-  res.status(200).json({ message: 'Products were found', data: products });
+  res.status(200).json({ message: 'Products were found', data: { products, count: documentCount } });
 });
 
 exports.getProductById = catchAsync(async (req, res) => {
@@ -280,7 +284,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
   }
   //prettier-ignore
   // eslint-disable-next-line max-len
-  await Product.create({ name, categoryId, sku, price, brandId, info, about, options, desc, images});
+  await Product.create({ name, categoryId, sku, price, brandId, info, about, options, desc, images });
 
   res.status(201).json({ message: 'Product was added successfully' });
 });
