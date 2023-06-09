@@ -1,6 +1,9 @@
 const express = require('express');
 const {
   getProductCategories,
+  addProductCategory,
+  editProductCategory,
+  deleteProductCategory,
   getAllProducts,
   addProduct,
   getProductById,
@@ -15,6 +18,7 @@ const validator = require('../middlewares/validation.middlwares');
 const { findProduct } = require('../middlewares/product.middlewares');
 // eslint-disable-next-line object-curly-newline
 const { isNthLength, isPrice, isIntWithMin, isMongoId, isGreaterThan, isMongoIdInBody } = require('../utils/validator');
+const { uploadPhoto } = require('../api/file');
 
 const productRouter = express.Router();
 
@@ -49,6 +53,31 @@ productRouter
   .get(isMongoId({ field: 'productId' }), validator, findProduct, getProductById)
   .patch(isLoggedIn, restrictTo('admin'), isMongoId({ field: 'productId' }), validator, findProduct, updateProduct)
   .delete(isLoggedIn, restrictTo('admin'), isMongoId({ field: 'productId' }), validator, findProduct, removeProduct);
+
+productRouter
+  .route('/categories/')
+  .post(
+    isLoggedIn,
+    restrictTo('admin'),
+    uploadPhoto('photo'),
+    isNthLength({ field: 'name', min: '3' }),
+    isNthLength({ field: 'desc', min: 16 }),
+    validator,
+    addProductCategory,
+  );
+
+productRouter
+  .route('/categories/:productCategoryId')
+  .put(
+    isLoggedIn,
+    restrictTo('admin'),
+    uploadPhoto('photo'),
+    isNthLength({ field: 'name', min: '3' }),
+    isNthLength({ field: 'desc', min: 16 }),
+    validator,
+    editProductCategory,
+  )
+  .delete(isLoggedIn, restrictTo('admin'), deleteProductCategory);
 
 productRouter.use('/:productId/reviews', reviewRouter);
 productRouter.use('/:productId/discounts', discountRouter);

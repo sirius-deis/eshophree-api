@@ -1,6 +1,5 @@
 require('dotenv').config();
 const http = require('http');
-const { Server } = require('socket.io');
 const connect = require('./db/connection');
 const app = require('./app');
 const log = require('./utils/log');
@@ -9,8 +8,7 @@ const { redisConnect } = require('./db/redis');
 const { PORT = 3000 } = process.env;
 
 const server = http.createServer(app);
-const io = new Server(server);
-const authIO = require('./socket/auth.middleware');
+require('./listeners/socket')(server);
 
 const start = () => {
   try {
@@ -25,23 +23,16 @@ const start = () => {
   }
 };
 
-/**
- * Socket io
- */
-
-io.use(authIO);
-io.on('connection', (socket) => {
-  require('./socket/socket')(socket, io);
-});
-
-/**
- *
- */
-
 [('unhandledRejection', 'uncaughtException')].forEach((event) => {
   const index = event.search(/[A-Z]/);
-  process.on(event, () => {
-    log('error', 'red', 'server status', `${event.slice(0, index).toUpperCase()} ${event.slice(index).toUpperCase()}`);
+  process.on(event, (error) => {
+    log(
+      'error',
+      'red',
+      'server status',
+      `${event.slice(0, index).toUpperCase()} ${event.slice(index).toUpperCase()}`,
+      error,
+    );
     server.close(() => {
       process.exit(1);
     });

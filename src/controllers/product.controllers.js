@@ -1,9 +1,16 @@
+const path = require('path');
+const fs = require('fs');
+
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { addToMapIfValuesExist } = require('../utils/utils');
+const { resizeAndSave } = require('../api/file');
 
 const Product = require('../models/product.models');
 const ProductCategory = require('../models/productCategory.models');
+
+const { IMAGE_FOLDER } = process.env;
+const dirPath = path.resolve(__dirname, '..', IMAGE_FOLDER);
 
 const addToOptionsIfNotEmpty = (options, key, value) => {
   if (value && typeof value === 'string') {
@@ -19,6 +26,87 @@ exports.getProductCategories = catchAsync(async (req, res) => {
   res.status(200).json({
     message: 'Categories were found successfully',
     data: { productCategory },
+  });
+});
+
+exports.addProductCategory = catchAsync(async (req, res) => {
+  const { name, desc } = req.body;
+
+  const { file } = req;
+
+  try {
+    await fs.access(dirPath);
+  } catch (err) {
+    await fs.mkdir(dirPath, { recursive: true });
+  }
+
+  const { buffer, originalName } = file;
+  const timestamp = new Date().toISOString();
+  const fileName = `${timestamp}-${originalName}`;
+  const filePath = `${dirPath}/${fileName}`;
+
+  await resizeAndSave(buffer, { width: 200, height: 200 }, 'jpeg', filePath);
+
+  await ProductCategory.create({ name, image: fileName, desc });
+
+  res.status(200).json({
+    message: 'Category was added successfully',
+  });
+});
+
+exports.editProductCategory = catchAsync(async (req, res) => {
+  const { name, desc } = req.body;
+  const { productCategoryId } = req.params;
+
+  const { file } = req;
+
+  const productCategory = await ProductCategory.findById(productCategoryId);
+
+  if (file) {
+    const { buffer, originalName } = file;
+    const timestamp = new Date().toISOString();
+    const fileName = `${timestamp}-${originalName}`;
+    const filePath = `${dirPath}/${fileName}`;
+
+    await resizeAndSave(buffer, { width: 200, height: 200 }, 'jpeg', filePath);
+
+    try {
+      await fs.unlink(`${dirPath}/${productCategory.image}`);
+    } catch {}
+
+    productCategory.image = fileName;
+  }
+
+  productCategory.name = name;
+  productCategory.desc = desc;
+
+  await productCategory.save();
+
+  res.status(200).json({
+    message: 'Category was updated successfully',
+  });
+});
+
+exports.deleteProductCategory = catchAsync(async (req, res, next) => {
+  const { withProducts } = req.body;
+  const { productCategoryId } = req.params;
+
+  if (withProducts) {
+    await Product.deleteMany({ categoryId: productCategoryId });
+  }
+
+  const productCategory = await ProductCategory.findByIdAndDelete(productCategoryId);
+
+  try {
+    await fs.unlink(`${dirPath}/${productCategory.image}`);
+  } catch {}
+
+  if (!productCategory) {
+    return next(new AppError('There is no product with such id', 404));
+  }
+
+  res.status(200).json({
+    message: 'Category was deleted successfully',
   });
 });
 
