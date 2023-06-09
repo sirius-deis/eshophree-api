@@ -55,6 +55,7 @@ exports.updateDiscount = catchAsync(async (req, res, next) => {
   const { percent, till } = req.body;
   const { product } = req;
 
+  // eslint-disable-next-line max-len
   const discount = await Discount.findByIdAndUpdate(product.discountId, { till, percent }, { runValidators: true });
 
   if (!discount) {

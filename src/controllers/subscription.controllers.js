@@ -29,6 +29,7 @@ exports.send = catchAsync(async (req, res, next) => {
   const { subject, template } = req.body;
   const subscribers = await Subscription.find();
 
+  // eslint-disable-next-line max-len
   await Promise.all(subscribers.map((subscriber) => sendEmail({ subject, to: subscriber, template, context: {} })));
 
   res.status(200).json({

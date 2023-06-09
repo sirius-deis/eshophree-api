@@ -4,14 +4,14 @@ const fs = require('fs');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { addToMapIfValuesExist } = require('../utils/utils');
-const { resizeAndSave } = require('../api/file');
+const { resizeAndSave, createFolderIfNotExists, deletePhotoIfExists } = require('../api/file');
 
 const Product = require('../models/product.models');
 const ProductCategory = require('../models/productCategory.models');
 const ProductVendor = require('../models/productVendor.models');
 
 const { IMAGE_FOLDER } = process.env;
-const dirPath = path.resolve(__dirname, '..', IMAGE_FOLDER);
+const dirPath = path.resolve(__dirname, '..', IMAGE_FOLDER, 'products');
 
 const addToOptionsIfNotEmpty = (options, key, value) => {
   if (value && typeof value === 'string') {
@@ -35,11 +35,7 @@ exports.addProductCategory = catchAsync(async (req, res) => {
 
   const { file } = req;
 
-  try {
-    await fs.access(dirPath);
-  } catch (err) {
-    await fs.mkdir(dirPath, { recursive: true });
-  }
+  await createFolderIfNotExists(dirPath);
 
   const { buffer, originalName } = file;
   const timestamp = new Date().toISOString();
@@ -71,9 +67,7 @@ exports.editProductCategory = catchAsync(async (req, res) => {
 
     await resizeAndSave(buffer, { width: 200, height: 200 }, 'jpeg', filePath);
 
-    try {
-      await fs.unlink(`${dirPath}/${productCategory.image}`);
-    } catch {}
+    await deletePhotoIfExists(`${dirPath}/${productCategory.image}`);
 
     productCategory.image = fileName;
   }
