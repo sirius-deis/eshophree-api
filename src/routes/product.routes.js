@@ -9,6 +9,10 @@ const {
   getProductById,
   removeProduct,
   updateProduct,
+  getProductVendorsList,
+  addProductVendor,
+  editProductVendor,
+  deleteProductVendor,
 } = require('../controllers/product.controllers');
 const reviewRouter = require('./review.routes');
 const discountRouter = require('./discount.routes');
@@ -23,6 +27,7 @@ const { uploadPhoto } = require('../api/file');
 const productRouter = express.Router();
 
 productRouter.get('/categories', getProductCategories);
+productRouter.get('/vendors', getProductVendorsList);
 
 productRouter
   .route('/')
@@ -78,6 +83,37 @@ productRouter
     editProductCategory,
   )
   .delete(isLoggedIn, restrictTo('admin'), deleteProductCategory);
+
+productRouter
+  .route('/vendors/')
+  .post(
+    isLoggedIn,
+    restrictTo('admin'),
+    isNthLength({ field: 'companyCode', min: '3' }),
+    isNthLength({ field: 'name', min: 2 }),
+    isNthLength({ field: 'description', min: '16' }),
+    isNthLength({ field: 'addressStreet', min: 4 }),
+    isNthLength({ field: 'addressCity', min: '4' }),
+    isNthLength({ field: 'addressPostalCode', min: 4 }),
+    validator,
+    addProductVendor,
+  );
+
+productRouter
+  .route('/vendors/:productVendorId')
+  .put(
+    isLoggedIn,
+    restrictTo('admin'),
+    isNthLength({ field: 'companyCode', min: '3' }),
+    isNthLength({ field: 'name', min: 2 }),
+    isNthLength({ field: 'description', min: '16' }),
+    isNthLength({ field: 'addressStreet', min: 4 }),
+    isNthLength({ field: 'addressCity', min: '4' }),
+    isNthLength({ field: 'addressPostalCode', min: 4 }),
+    validator,
+    editProductVendor,
+  )
+  .delete(isLoggedIn, restrictTo('admin'), deleteProductVendor);
 
 productRouter.use('/:productId/reviews', reviewRouter);
 productRouter.use('/:productId/discounts', discountRouter);

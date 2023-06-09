@@ -8,6 +8,7 @@ const { resizeAndSave } = require('../api/file');
 
 const Product = require('../models/product.models');
 const ProductCategory = require('../models/productCategory.models');
+const ProductVendor = require('../models/productVendor.models');
 
 const { IMAGE_FOLDER } = process.env;
 const dirPath = path.resolve(__dirname, '..', IMAGE_FOLDER);
@@ -49,7 +50,7 @@ exports.addProductCategory = catchAsync(async (req, res) => {
 
   await ProductCategory.create({ name, image: fileName, desc });
 
-  res.status(200).json({
+  res.status(201).json({
     message: 'Category was added successfully',
   });
 });
@@ -102,12 +103,63 @@ exports.deleteProductCategory = catchAsync(async (req, res, next) => {
   } catch {}
 
   if (!productCategory) {
-    return next(new AppError('There is no product with such id', 404));
+    return next(new AppError('There is no product category with such id', 404));
+  }
+
+  res.status(204).send();
+});
+
+exports.getProductVendorsList = catchAsync(async (req, res) => {
+  const productVendors = await ProductVendor.find();
+
+  res.status(200).json({
+    message: 'Product vendors were retrieved successfully',
+    data: { productVendors },
+  });
+});
+
+exports.addProductVendor = catchAsync(async (req, res) => {
+  const { companyCode, name, description, addressStreet, addressCity, addressPostalCode } = req.body;
+
+  await ProductVendor.create({ companyCode, name, description, addressStreet, addressCity, addressPostalCode });
+
+  res.status(201).json({
+    message: 'Product vendor was added successfully',
+  });
+});
+
+exports.editProductVendor = catchAsync(async (req, res, next) => {
+  const { productVendorId } = req.params;
+  const { companyCode, name, description, addressStreet, addressCity, addressPostalCode } = req.body;
+
+  const productVendor = await ProductVendor.findByIdAndUpdate(productVendorId, {
+    companyCode,
+    name,
+    description,
+    addressStreet,
+    addressCity,
+    addressPostalCode,
+  });
+
+  if (!productVendor) {
+    return next(new AppError('There is no product vendor with such id', 404));
   }
 
   res.status(200).json({
-    message: 'Category was deleted successfully',
+    message: 'Product vendor was updated successfully',
   });
+});
+
+exports.deleteProductVendor = catchAsync(async (req, res, next) => {
+  const { productVendorId } = req.params;
+
+  const productVendor = await ProductVendor.findByIdAndDelete(productVendorId);
+
+  if (!productVendor) {
+    return next(new AppError('There is no product vendor with such id', 404));
+  }
+
+  res.status(204).send();
 });
 
 exports.getAllProducts = catchAsync(async (req, res, next) => {
