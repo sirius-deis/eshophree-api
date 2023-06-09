@@ -4,7 +4,8 @@ const User = require('../models/user.models');
 const { JWT_SECRET } = process.env;
 
 module.exports = async (socket, next) => {
-  const { token } = socket.handshake.headers;
+  const token =
+    socket.handshake.headers.authorization && socket.handshake.headers.authorization.match(/^Bearer (.*)$/)[1];
   if (!token) {
     return next();
   }
