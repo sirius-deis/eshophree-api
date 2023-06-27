@@ -114,9 +114,17 @@ exports.getProductVendorsList = catchAsync(async (req, res) => {
 
 exports.addProductVendor = catchAsync(async (req, res) => {
   // eslint-disable-next-line max-len
-  const { companyCode, name, description, addressStreet, addressCity, addressPostalCode } = req.body;
+  const { companyCode, name, description, addressStreet, addressCity, addressPostalCode } =
+    req.body;
   // eslint-disable-next-line max-len
-  await ProductVendor.create({ companyCode, name, description, addressStreet, addressCity, addressPostalCode });
+  await ProductVendor.create({
+    companyCode,
+    name,
+    description,
+    addressStreet,
+    addressCity,
+    addressPostalCode,
+  });
 
   res.status(201).json({
     message: 'Product vendor was added successfully',
@@ -126,7 +134,8 @@ exports.addProductVendor = catchAsync(async (req, res) => {
 exports.editProductVendor = catchAsync(async (req, res, next) => {
   const { productVendorId } = req.params;
   // eslint-disable-next-line max-len
-  const { companyCode, name, description, addressStreet, addressCity, addressPostalCode } = req.body;
+  const { companyCode, name, description, addressStreet, addressCity, addressPostalCode } =
+    req.body;
 
   const productVendor = await ProductVendor.findByIdAndUpdate(productVendorId, {
     companyCode,
@@ -158,9 +167,27 @@ exports.deleteProductVendor = catchAsync(async (req, res, next) => {
   res.status(204).send();
 });
 
+exports.addTagToProduct = catchAsync(async (req, res, next) => {
+  const { product } = req;
+  const { tags } = req.body;
+
+  if (product.tags.every((tag) => tags.includes(tag))) {
+    return next(new AppError('This product already contains provided tags', 404));
+  }
+
+  const filteredTags = tags.filter((tag) => product.tags.includes(tag));
+
+  product.tags.push(...filteredTags);
+
+  await product.save();
+
+  res.status(200).json({ message: 'Tag was added to product successfully' });
+});
+
 exports.getAllProducts = catchAsync(async (req, res, next) => {
   //prettier-ignore
-  const { limit = 10, page = 1, category, brand, price, rating, sort, fields, search} = req.query;
+  // eslint-disable-next-line max-len
+  const { limit = 10, page = 1, category, brand, price, rating, sort, fields, search, tag } = req.query;
   const queryOptions = {};
 
   addToOptionsIfNotEmpty(queryOptions, 'categoryId', category);
@@ -198,6 +225,10 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
     };
   }
 
+  if (tag) {
+    queryOptions.tag = { $all: [tag] };
+  }
+
   const skip = limit * (page - 1);
 
   const fieldsToSelect = {};
@@ -233,7 +264,9 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
     return next(new AppError('There are no products left', 200));
   }
 
-  res.status(200).json({ message: 'Products were found', data: { products, count: documentCount } });
+  res
+    .status(200)
+    .json({ message: 'Products were found', data: { products, count: documentCount } });
 });
 
 exports.getProductById = catchAsync(async (req, res) => {

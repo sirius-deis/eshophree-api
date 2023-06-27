@@ -83,6 +83,9 @@ const productSchema = mongoose.Schema(
     discountId: {
       type: mongoose.SchemaTypes.ObjectId,
     },
+    tags: {
+      type: [String],
+    },
   },
   {
     toJSON: {
