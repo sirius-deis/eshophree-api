@@ -167,7 +167,7 @@ exports.deleteProductVendor = catchAsync(async (req, res, next) => {
   res.status(204).send();
 });
 
-exports.addTagToProduct = catchAsync(async (req, res, next) => {
+exports.addTagsToProduct = catchAsync(async (req, res, next) => {
   const { product } = req;
   const { tags } = req.body;
 
@@ -178,6 +178,21 @@ exports.addTagToProduct = catchAsync(async (req, res, next) => {
   const filteredTags = tags.filter((tag) => product.tags.includes(tag));
 
   product.tags.push(...filteredTags);
+
+  await product.save();
+
+  res.status(200).json({ message: 'Tag was added to product successfully' });
+});
+
+exports.deleteTagsFromProduct = catchAsync(async (req, res, next) => {
+  const { product } = req;
+  const { tags } = req.body;
+
+  if (!product.tags.every((tag) => tags.includes(tag))) {
+    return next(new AppError('This product does not contain provided tags', 404));
+  }
+
+  product.tags = product.tags.filter((tag) => !tags.includes(tag));
 
   await product.save();
 
@@ -316,7 +331,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
   res.status(201).json({ message: 'Product was added successfully' });
 });
 
-exports.removeProduct = catchAsync(async (req, res) => {
+exports.deleteProduct = catchAsync(async (req, res) => {
   const { product } = req;
   await product.deleteOne();
 

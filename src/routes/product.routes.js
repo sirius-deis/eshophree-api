@@ -7,12 +7,14 @@ const {
   getAllProducts,
   addProduct,
   getProductById,
-  removeProduct,
+  deleteProduct,
   updateProduct,
   getProductVendorsList,
   addProductVendor,
   editProductVendor,
   deleteProductVendor,
+  addTagsToProduct,
+  deleteTagsFromProduct,
 } = require('../controllers/product.controllers');
 const reviewRouter = require('./review.routes');
 const discountRouter = require('./discount.routes');
@@ -21,7 +23,15 @@ const { isLoggedIn, restrictTo } = require('../middlewares/auth.middlewares');
 const validator = require('../middlewares/validation.middlwares');
 const { findProduct } = require('../middlewares/product.middlewares');
 // eslint-disable-next-line object-curly-newline
-const { isNthLength, isPrice, isIntWithMin, isMongoId, isGreaterThan, isMongoIdInBody } = require('../utils/validator');
+const {
+  isNthLength,
+  isPrice,
+  isIntWithMin,
+  isMongoId,
+  isGreaterThan,
+  isMongoIdInBody,
+  isArray,
+} = require('../utils/validator');
 const { uploadPhoto } = require('../api/file');
 
 const productRouter = express.Router();
@@ -54,10 +64,29 @@ productRouter
   );
 
 productRouter
+  .route('/:productId/tags')
+  .patch(isLoggedIn, restrictTo('admin'), isArray('tags'), findProduct, addTagsToProduct)
+  .delete(isLoggedIn, restrictTo('admin'), isArray('tags'), findProduct, deleteTagsFromProduct);
+
+productRouter
   .route('/:productId')
   .get(isMongoId({ field: 'productId' }), validator, findProduct, getProductById)
-  .patch(isLoggedIn, restrictTo('admin'), isMongoId({ field: 'productId' }), validator, findProduct, updateProduct)
-  .delete(isLoggedIn, restrictTo('admin'), isMongoId({ field: 'productId' }), validator, findProduct, removeProduct);
+  .patch(
+    isLoggedIn,
+    restrictTo('admin'),
+    isMongoId({ field: 'productId' }),
+    validator,
+    findProduct,
+    updateProduct,
+  )
+  .delete(
+    isLoggedIn,
+    restrictTo('admin'),
+    isMongoId({ field: 'productId' }),
+    validator,
+    findProduct,
+    deleteProduct,
+  );
 
 productRouter
   .route('/categories/')

@@ -13,4 +13,7 @@ exports.isIntWithMin = ({ field, isOptional = false, min = 0, max }) =>
 exports.isMongoId = ({ field }) => param(field).isMongoId();
 exports.isMongoIdInBody = ({ field }) => body(field).isMongoId();
 
-exports.isGreaterThan = ({ field, isOptional = false, gt }) => query(field).optional(isOptional).isInt({ gt });
+exports.isGreaterThan = ({ field, isOptional = false, gt }) =>
+  query(field).optional(isOptional).isInt({ gt });
+
+exports.isArray = ({ field, isOptional }) => body(field).optional(isOptional).isArray();
