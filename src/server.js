@@ -15,6 +15,7 @@ const start = () => {
     connect();
     redisConnect();
     server.listen(PORT, () => {
+      global.serverStartedAt = new Date();
       logger.info(`Server is running on port: ${PORT}`);
     });
   } catch (error) {

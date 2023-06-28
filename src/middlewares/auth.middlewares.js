@@ -46,6 +46,10 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
     return next(new AppError('Token verification failed', 401));
   }
 
+  if (new Date(payload.iat * 1000) < global.serverStartedAt) {
+    return next(new AppError('Please login again', 401));
+  }
+
   const blockedToken = await getValue(payload.id, token);
 
   if (blockedToken) {
