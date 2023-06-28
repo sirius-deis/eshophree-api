@@ -1,6 +1,4 @@
-const log = require('../utils/log');
-
-const { NODE_ENV } = process.env;
+const logger = require('../api/logger');
 
 module.exports = (error, req, res, next) => {
   if (error.code === 11000) {
@@ -8,13 +6,10 @@ module.exports = (error, req, res, next) => {
     error.message = 'Email address is already in use';
     error.isOperational = true;
   }
+  logger.error(`${error.name}, ${error}`);
   if (error.isOperational) {
-    if (NODE_ENV === 'development') {
-      log('error', 'magenta', 'server status', error.name, error);
-    }
     res.status(error.statusCode).json({ message: error.message });
   } else {
-    log('error', 'red', 'server status', error.name, error);
     res.status(500).json({
       message: 'Something went wrong. Please try again later',
     });

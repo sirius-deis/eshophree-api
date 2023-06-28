@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 const hbs = require('nodemailer-express-handlebars');
 const path = require('path');
-const log = require('../utils/log');
+const logger = require('./logger');
 
 // eslint-disable-next-line object-curly-newline
 const { NODE_ENV, EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } = process.env;
@@ -22,7 +22,13 @@ const sendEmail = async (subject, to, template, context) => {
         extname: '.handlebars',
         partialsDir: path.resolve(__dirname, '../views', 'emails'),
         layoutsDir: path.resolve(__dirname, '../views', 'emails', 'layouts'),
-        defaultLayout: path.resolve(__dirname, '../views', 'emails', 'layouts', 'root.emails.handlebars'),
+        defaultLayout: path.resolve(
+          __dirname,
+          '../views',
+          'emails',
+          'layouts',
+          'root.emails.handlebars',
+        ),
       },
       viewPath: path.resolve(__dirname, '../views/emails'),
       extName: '.handlebars',
@@ -38,16 +44,13 @@ const sendEmail = async (subject, to, template, context) => {
       context,
     };
 
-    if (NODE_ENV === 'development') {
-      log('info', 'magenta', 'mailer status', 'Email was sent successfully');
-
-      log('info', 'blue', 'mailer status', context.link);
+    if (NODE_ENV !== 'production') {
+      logger.debug(context.link);
     } else {
-      await transporter.sendMail(options);
+      // await transporter.sendMail(options);
     }
   } catch (error) {
-    // log('error', 'red', 'mailer status', error);
-    // throw new Error(error);
+    throw new Error(error);
   }
 };
 

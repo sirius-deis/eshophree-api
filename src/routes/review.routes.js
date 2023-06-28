@@ -10,10 +10,12 @@ const {
 } = require('../controllers/review.controllers');
 const validator = require('../middlewares/validation.middlwares');
 const { isIntWithMin, isNthLength, isMongoId } = require('../utils/validator');
+const { findProduct } = require('../middlewares/product.middlewares');
 
 const reviewRouter = express.Router({ mergeParams: true });
 
 reviewRouter.use(isMongoId({ field: 'productId' }));
+reviewRouter.use(findProduct);
 
 reviewRouter
   .route('/')

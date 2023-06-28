@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const log = require('../utils/log');
+const logger = require('../api/logger');
 
 const connect = () => {
   mongoose.connect(`mongodb://localhost:27017/${process.env.DB_NAME}`, {
@@ -8,13 +8,13 @@ const connect = () => {
   });
 
   mongoose.set('debug', (collectionName, method, query, doc) => {
-    log('info', 'magenta', 'database state', `${collectionName}.${method}`, JSON.stringify(query), doc);
+    logger.debug(`${collectionName}.${method}: ${JSON.stringify(query)}, ${doc}`);
   });
 
   mongoose.connection
-    .on('open', () => log('info', 'green', 'database state', 'Connection established'))
-    .on('close', () => log('info', 'green', 'database state', 'Connection close'))
-    .on('error', (error) => log('error', 'red', 'database state', error));
+    .on('open', () => logger.info('Connection established'))
+    .on('close', () => logger.info('Connection close'))
+    .on('error', logger.error);
 };
 
 module.exports = connect;

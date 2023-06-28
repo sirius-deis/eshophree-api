@@ -3,6 +3,7 @@ const AppError = require('../utils/appError');
 
 const Review = require('../models/review.models');
 const ReviewRating = require('../models/reviewRating.models');
+const Product = require('../models/product.models');
 
 const chooseReviewFields = (fields) => {
   const map = {};

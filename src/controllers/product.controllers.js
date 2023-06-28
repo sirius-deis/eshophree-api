@@ -9,6 +9,7 @@ const { resizeAndSave, createFolderIfNotExists, deletePhotoIfExists } = require(
 const Product = require('../models/product.models');
 const ProductCategory = require('../models/productCategory.models');
 const ProductVendor = require('../models/productVendor.models');
+const ReviewRating = require('../models/reviewRating.models');
 
 const { IMAGE_FOLDER } = process.env;
 const dirPath = path.resolve(__dirname, '..', IMAGE_FOLDER, 'products');
@@ -229,7 +230,7 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
       }, {});
   }
 
-  if (rating) {
+  if (rating !== undefined) {
     queryOptions.$or = [{ ratingAverage: { $gte: rating } }, { ratingAverage: { $exists: 0 } }];
   }
 
@@ -260,8 +261,7 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
     });
   }
 
-  const documentCount = await Product.countDocuments({ queryOptions });
-
+  const documentCount = await Product.countDocuments(queryOptions);
   const products = await Product.find(queryOptions, fieldsToSelect)
     .skip(skip)
     .limit(limit)

@@ -1,10 +1,10 @@
 const { createClient } = require('redis');
-
-const log = require('../utils/log');
+const logger = require('../api/logger');
 
 const client = createClient();
-client.on('connect', () => log('info', 'green', 'redis status', 'Redis client connected'));
-client.on('error', (error) => log('error', 'red', 'redis status', error));
+
+client.on('connect', () => logger.info('Redis client connected'));
+client.on('error', logger.error);
 
 const redisConnect = async () => {
   await client.connect();
