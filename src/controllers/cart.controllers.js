@@ -22,7 +22,7 @@ exports.getCart = catchAsync(async (req, res, next) => {
 exports.addToCart = catchAsync(async (req, res, next) => {
   const { productId } = req.params;
   const { user } = req;
-  const { quantity } = req.body;
+  const { quantity, color, option } = req.body;
   if (quantity < 1) {
     return next(new AppError("Quantity can't be a negative value", 400));
   }
@@ -30,11 +30,16 @@ exports.addToCart = catchAsync(async (req, res, next) => {
   if (!cart) {
     cart = await Cart.create({ userId: user._id });
   }
-  const index = cart.products?.findIndex((product) => product.productId.equals(productId));
+  const index = cart.products?.findIndex(
+    (product) =>
+      product.productId.equals(productId) && product.color === color && product.option === option,
+  );
   if (index === undefined || index === -1) {
     cart.products.push({
       productId,
       quantity: quantity ?? 1,
+      color,
+      option,
     });
   } else {
     cart.products[index].quantity += quantity ?? 1;

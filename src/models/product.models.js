@@ -86,6 +86,10 @@ const productSchema = mongoose.Schema(
     tags: {
       type: [String],
     },
+    colors: {
+      type: [String],
+      required: true,
+    },
   },
   {
     toJSON: {
