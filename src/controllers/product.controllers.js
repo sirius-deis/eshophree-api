@@ -172,12 +172,11 @@ exports.addTagsToProduct = catchAsync(async (req, res, next) => {
   const { product } = req;
   const { tags } = req.body;
 
-  if (product.tags.every((tag) => tags.includes(tag))) {
+  if (product.tags.length && product.tags.every((tag) => tags.includes(tag))) {
     return next(new AppError('This product already contains provided tags', 404));
   }
 
-  const filteredTags = tags.filter((tag) => product.tags.includes(tag));
-
+  const filteredTags = tags.filter((tag) => !product.tags.includes(tag));
   product.tags.push(...filteredTags);
 
   await product.save();
@@ -189,7 +188,7 @@ exports.deleteTagsFromProduct = catchAsync(async (req, res, next) => {
   const { product } = req;
   const { tags } = req.body;
 
-  if (!product.tags.every((tag) => tags.includes(tag))) {
+  if (product.tags.length && !product.tags.every((tag) => tags.includes(tag))) {
     return next(new AppError('This product does not contain provided tags', 404));
   }
 
@@ -265,7 +264,6 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
   const products = await Product.find(queryOptions, fieldsToSelect)
     .skip(skip)
     .limit(limit)
-    .sort((sort && sort.replace(/[, ]/g, ' ')) || 'createdAt')
     .populate({
       path: 'discount',
       options: {
