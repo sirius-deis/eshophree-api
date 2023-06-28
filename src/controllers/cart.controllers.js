@@ -52,13 +52,16 @@ exports.addToCart = catchAsync(async (req, res, next) => {
 
 exports.decreaseProductsInCart = catchAsync(async (req, res, next) => {
   const { productId } = req.params;
-  const { quantityToDelete = 1 } = req.body;
+  const { quantityToDelete = 1, color, option } = req.body;
   if (quantityToDelete < 1) {
     return next(new AppError("Quantity can't be a negative value", 400));
   }
   const { user } = req;
   const cart = await Cart.findOne({ userId: user._id });
-  const index = cart.products?.findIndex((product) => product.productId.equals(productId));
+  const index = cart.products?.findIndex(
+    (product) =>
+      product.productId.equals(productId) && product.color === color && product.option === option,
+  );
   if (index === undefined || index === -1) {
     return next(new AppError('There is no such product in your cart', 404));
   }
