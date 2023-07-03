@@ -1,5 +1,6 @@
 const express = require('express');
 const {
+  getWishlist,
   addToWishlist,
   deleteFromWishlist,
   clearWishlist,
@@ -12,7 +13,7 @@ const wishlistRouter = express.Router({ mergeParams: true });
 wishlistRouter.use(isLoggedIn);
 wishlistRouter.use(findProduct);
 
-wishlistRouter.route('/').delete(clearWishlist);
+wishlistRouter.route('/').get(getWishlist).delete(clearWishlist);
 
 wishlistRouter.patch('/add', addToWishlist);
 
