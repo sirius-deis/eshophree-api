@@ -8,6 +8,7 @@ const UserPayment = require('../models/userPayment.models');
 const Cart = require('../models/cart.models');
 const ResetToken = require('../models/resetToken.models');
 const ActivateToken = require('../models/activateToken.models');
+const Wishlist = require('../models/wishlist.models');
 const sendEmail = require('../api/email');
 const { addToMapIfValuesExist } = require('../utils/utils');
 const { getValue, setValue } = require('../db/redis');
@@ -75,7 +76,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     email,
     password,
   });
-  await Cart.create({ userId: user._id, products: [] });
+  await Cart.create({ userId: user._id });
+  await Wishlist.create({ userId: user._id });
   const activateToken = createToken();
   await ActivateToken.create({ userId: user._id, token: activateToken });
 
@@ -106,13 +108,14 @@ exports.login = catchAsync(async (req, res, next) => {
   user.password = undefined;
 
   const cart = await Cart.findOne({ userId: user._id });
+  const wishlist = await Wishlist.findOne({ userId: user._id });
 
   sendResponseWithNewToken(
     res,
     200,
     {
       message: 'You was sign in successfully',
-      data: { user, cart },
+      data: { user, cart, wishlist },
     },
     user._id,
   );
@@ -276,6 +279,7 @@ exports.deleteAccount = catchAsync(async (req, res, next) => {
   }
 
   await Cart.deleteOne({ userId: user._id });
+  await Wishlist.deleteOne({ userId: user._id });
   await UserInfo.findByIdAndDelete(user._id);
   await UserPayment.findByIdAndDelete(user._id);
   if (user.photo) {
@@ -289,12 +293,13 @@ exports.deleteAccount = catchAsync(async (req, res, next) => {
 exports.me = catchAsync(async (req, res) => {
   const { user } = req;
   const cart = await Cart.findOne({ userId: user._id }).populate('products.productId');
+  const wishlist = await Wishlist.findOne({ userId: user._id }).populate('products.productId');
 
   user.password = undefined;
 
   res.status(200).json({
     message: 'You were sign in successfully',
-    data: { user, cart },
+    data: { user, cart, wishlist },
   });
 });
 
