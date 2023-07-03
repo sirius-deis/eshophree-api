@@ -1,3 +1,5 @@
+/* eslint-disable implicit-arrow-linebreak */
+/* eslint-disable operator-linebreak  */
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 
@@ -22,7 +24,7 @@ exports.getCart = catchAsync(async (req, res, next) => {
 exports.addToCart = catchAsync(async (req, res, next) => {
   const { productId } = req.params;
   const { user } = req;
-  const { quantity, color, option } = req.body;
+  const { quantity, color, optionNameId, optionId } = req.body;
   if (quantity < 1) {
     return next(new AppError("Quantity can't be a negative value", 400));
   }
@@ -32,14 +34,18 @@ exports.addToCart = catchAsync(async (req, res, next) => {
   }
   const index = cart.products?.findIndex(
     (product) =>
-      product.productId.equals(productId) && product.color === color && product.option === option,
+      product.productId.equals(productId) &&
+      product.color === color &&
+      product.optionNameId.equals(optionNameId) &&
+      product.optionId.equals(optionId),
   );
   if (index === undefined || index === -1) {
     cart.products.push({
       productId,
       quantity: quantity ?? 1,
       color,
-      option,
+      optionNameId,
+      optionId,
     });
   } else {
     cart.products[index].quantity += quantity ?? 1;
@@ -52,7 +58,7 @@ exports.addToCart = catchAsync(async (req, res, next) => {
 
 exports.decreaseProductsInCart = catchAsync(async (req, res, next) => {
   const { productId } = req.params;
-  const { quantityToDelete = 1, color, option } = req.body;
+  const { quantityToDelete = 1, color, optionNameId, optionId } = req.body;
   if (quantityToDelete < 1) {
     return next(new AppError("Quantity can't be a negative value", 400));
   }
@@ -60,7 +66,10 @@ exports.decreaseProductsInCart = catchAsync(async (req, res, next) => {
   const cart = await Cart.findOne({ userId: user._id });
   const index = cart.products?.findIndex(
     (product) =>
-      product.productId.equals(productId) && product.color === color && product.option === option,
+      product.productId.equals(productId) &&
+      product.color === color &&
+      product.optionNameId.equals(optionNameId) &&
+      product.optionId.equals(optionId),
   );
   if (index === undefined || index === -1) {
     return next(new AppError('There is no such product in your cart', 404));

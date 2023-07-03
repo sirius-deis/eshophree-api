@@ -25,8 +25,11 @@ const CartSchema = mongoose.Schema(
           type: String,
           required: true,
         },
-        option: {
-          type: String,
+        optionNameId: {
+          type: mongoose.Types.ObjectId,
+        },
+        optionId: {
+          type: mongoose.Types.ObjectId,
         },
       },
     ],

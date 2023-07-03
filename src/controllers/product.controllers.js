@@ -9,7 +9,6 @@ const { resizeAndSave, createFolderIfNotExists, deletePhotoIfExists } = require(
 const Product = require('../models/product.models');
 const ProductCategory = require('../models/productCategory.models');
 const ProductVendor = require('../models/productVendor.models');
-const ReviewRating = require('../models/reviewRating.models');
 
 const { IMAGE_FOLDER } = process.env;
 const dirPath = path.resolve(__dirname, '..', IMAGE_FOLDER, 'products');
@@ -202,7 +201,7 @@ exports.deleteTagsFromProduct = catchAsync(async (req, res, next) => {
 exports.getAllProducts = catchAsync(async (req, res, next) => {
   //prettier-ignore
   // eslint-disable-next-line max-len
-  const { limit = 10, page = 1, category, brand, price, rating, sort, fields, search, tag } = req.query;
+  const { limit = 10, page = 1, category, brand, price, rating, fields, search, tag } = req.query;
   const queryOptions = {};
 
   addToOptionsIfNotEmpty(queryOptions, 'categoryId', category);
