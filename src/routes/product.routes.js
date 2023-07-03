@@ -19,6 +19,7 @@ const {
 const reviewRouter = require('./review.routes');
 const discountRouter = require('./discount.routes');
 const cartRouter = require('./cart.routes');
+const wishlistRouter = require('./wishlist.routes');
 const { isLoggedIn, restrictTo } = require('../middlewares/auth.middlewares');
 const validator = require('../middlewares/validation.middlwares');
 const { findProduct } = require('../middlewares/product.middlewares');
@@ -35,6 +36,11 @@ const {
 const { uploadPhoto } = require('../api/file');
 
 const productRouter = express.Router();
+
+productRouter.use('/:productId/reviews', reviewRouter);
+productRouter.use('/:productId/discounts', discountRouter);
+productRouter.use('/:productId/carts', cartRouter);
+productRouter.use('/:productId/wishlist', wishlistRouter);
 
 productRouter.get('/categories', getProductCategories);
 productRouter.get('/vendors', getProductVendorsList);
@@ -143,9 +149,5 @@ productRouter
     editProductVendor,
   )
   .delete(isLoggedIn, restrictTo('admin'), deleteProductVendor);
-
-productRouter.use('/:productId/reviews', reviewRouter);
-productRouter.use('/:productId/discounts', discountRouter);
-productRouter.use('/:productId/carts', cartRouter);
 
 module.exports = productRouter;
