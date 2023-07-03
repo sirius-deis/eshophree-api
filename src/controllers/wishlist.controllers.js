@@ -42,3 +42,21 @@ exports.deleteFromWishlist = catchAsync(async (req, res, next) => {
 
   return res.status(200).json({ message: 'Product was deleted from your wishlist successfully' });
 });
+
+exports.clearWishlist = catchAsync(async (req, res, next) => {
+  const { user } = req;
+
+  const wishlist = await Wishlist.findOne({
+    userId: user._id,
+  });
+
+  if (!wishlist) {
+    return next(new AppError('There is no wishlist for selected user', 404));
+  }
+
+  wishlist.products = [];
+
+  await wishlist.save();
+
+  return res.status(204).send();
+});
