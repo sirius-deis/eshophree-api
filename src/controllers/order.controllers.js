@@ -51,12 +51,12 @@ exports.getOrder = catchAsync(async (req, res, next) => {
 exports.addOrder = catchAsync(async (req, res, next) => {
   const { user } = req;
   const { comment, email } = req.body;
+
   let { cart } = req.body;
   if (!cart && user) {
     cart = await Cart.findOne({ userId: user._id });
   }
-
-  if (!cart) {
+  if (!cart || Object.keys(cart).length < 1) {
     return next(new AppError("Cart can't be empty", 400));
   }
 

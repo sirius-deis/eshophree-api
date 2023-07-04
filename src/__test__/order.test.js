@@ -12,10 +12,28 @@ const makeRequest = require('./makeRequest');
 describe('/orders', () => {
   let user;
   let token;
+  let product1;
+  let product2;
+  let testCart;
   beforeAll(async () => {
     await connect();
     await redisConnect();
-    await Product.create({
+    const options = [
+      {
+        title: 'Option 1',
+        optArr: [
+          {
+            opt: 'Opt1',
+            plusToPrice: 203,
+          },
+          {
+            opt: 'Opt2',
+            plusToPrice: 102,
+          },
+        ],
+      },
+    ];
+    product1 = await Product.create({
       _id: '64777d65c584ff381b29ee4e',
       name: 'product 1',
       categoryId: '64777772368a9a9f9c105b17',
@@ -23,8 +41,10 @@ describe('/orders', () => {
       brandId: '6470509a84eda2141def7aff',
       images: [''],
       ratingAverage: 5,
+      options,
+      colors: ['black'],
     });
-    await Product.create({
+    product2 = await Product.create({
       _id: '64777d68c584ff381b29f87f',
       name: 'product 2',
       categoryId: '64777772368a9a9f9c105b17',
@@ -32,25 +52,34 @@ describe('/orders', () => {
       brandId: '6470509a84eda2141def7aff',
       images: [''],
       ratingAverage: 4,
+      options,
+      colors: ['black'],
     });
-    await Product.create({
-      _id: '647587bea3961e852fb2b176',
-      name: 'product 3',
-      categoryId: '64777772368a9a9f9c105b17',
-      price: 573,
-      brandId: '6470509a84eda2141def7aff',
-      images: [''],
-      ratingAverage: 5,
-    });
-    await Product.create({
-      _id: '647be2f749ae659b67de51f1',
-      name: 'product 4',
-      categoryId: '64777772368a9a9f9c105b17',
-      price: 241,
-      brandId: '6470509a84eda2141def7aff',
-      images: [''],
-      ratingAverage: 4,
-    });
+    testCart = {
+      products: [
+        {
+          productId: product1._id,
+          quantity: 2,
+          color: 'black',
+          optionNameId: product1.options[0]._id,
+          optionId: product1.options[0].optArr[0]._id,
+        },
+        {
+          productId: product2._id,
+          quantity: 4,
+          color: 'black',
+          optionNameId: product2.options[0]._id,
+          optionId: product2.options[0].optArr[0]._id,
+        },
+        {
+          productId: product1._id,
+          quantity: 5,
+          color: 'black',
+          optionNameId: product1.options[0]._id,
+          optionId: product1.options[0].optArr[1]._id,
+        },
+      ],
+    };
 
     user = await User.create({
       email: 'test@test.com',
@@ -63,18 +92,32 @@ describe('/orders', () => {
       userId: user._id,
       products: [
         {
-          productId: '64777d65c584ff381b29ee4e',
+          productId: product1._id,
           quantity: 2,
+          color: 'black',
+          optionNameId: product1.options[0]._id,
+          optionId: product1.options[0].optArr[0]._id,
         },
         {
-          productId: '647587bea3961e852fb2b176',
+          productId: product2._id,
+          quantity: 4,
+          color: 'black',
+          optionNameId: product2.options[0]._id,
+          optionId: product2.options[0].optArr[0]._id,
+        },
+        {
+          productId: product1._id,
           quantity: 5,
+          color: 'black',
+          optionNameId: product1.options[0]._id,
+          optionId: product1.options[0].optArr[1]._id,
         },
       ],
     });
     const response = await request(app)
       .post('/api/v1/users/login')
       .send({ email: 'test@test.com', password: 'password123' });
+    // eslint-disable-next-line prefer-destructuring
     token = response.body.token;
   });
 
@@ -99,9 +142,10 @@ describe('/orders', () => {
         route: 'orders/',
         body: {
           cart: {},
+          email: 'test@test,com',
         },
         statusCode: 400,
-        expectedResult: 'Please provide email or create an account',
+        expectedResult: "Cart can't be empty",
         done,
       });
     });
@@ -110,11 +154,10 @@ describe('/orders', () => {
         method: 'post',
         route: 'orders/',
         body: {
-          cart: {},
-          email: 'test@test,com',
+          cart: testCart,
         },
         statusCode: 400,
-        expectedResult: "Cart can't be empty please choose products",
+        expectedResult: 'Please provide email or create an account',
         done,
       });
     });
@@ -125,30 +168,7 @@ describe('/orders', () => {
         body: {
           email: 'test@test.com',
           comment: 'some comment',
-          cart: {
-            products: [
-              {
-                productId: { name: 'product1', _id: '64777d65c584ff381b29ee4e', price: '$423' },
-                quantity: 5,
-                _id: '6475876ea3961e852fb2b167',
-              },
-              {
-                productId: { name: 'product2', _id: '64777d68c584ff381b29f87f', price: '$64' },
-                quantity: 4,
-                _id: '647587a5a3961e852fb2b170',
-              },
-              {
-                productId: { name: 'product3', _id: '647587bea3961e852fb2b176', price: '$635' },
-                quantity: 3,
-                _id: '647587bea3961e852fb2b176',
-              },
-              {
-                productId: { name: 'product4', _id: '647be2f749ae659b67de51f1', price: '$85' },
-                quantity: 2,
-                _id: '647be2f749ae659b67de51f1',
-              },
-            ],
-          },
+          cart: testCart,
         },
         statusCode: 201,
         expectedResult: 'Products from cart were added to order successfully',

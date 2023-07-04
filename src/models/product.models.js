@@ -10,6 +10,7 @@ const productSchema = new mongoose.Schema(
     categoryId: {
       type: mongoose.SchemaTypes.ObjectId,
       required: [true, 'Please provide valid data'],
+      ref: 'ProductCategory',
     },
     sku: {
       type: String,
@@ -23,6 +24,7 @@ const productSchema = new mongoose.Schema(
     brandId: {
       type: mongoose.SchemaTypes.ObjectId,
       required: [true, "This field can't be empty. Please provide correct data"],
+      ref: 'ProductVendor',
     },
     info: [
       {
@@ -108,6 +110,11 @@ productSchema.virtual('discount', {
   localField: 'discountId',
   foreignField: '_id',
   justOne: true,
+});
+
+productSchema.pre('find', function (next) {
+  this.populate('categoryId', 'name').populate('brandId', 'name');
+  next();
 });
 
 const Product = mongoose.model('Product', productSchema);
