@@ -25,16 +25,21 @@ exports.getCart = catchAsync(async (req, res, next) => {
 exports.addToCart = catchAsync(async (req, res, next) => {
   const { product } = req;
   const { user } = req;
-  const { quantity, color, optionNameId, optionId } = req.body;
+  const { quantity = 1, color, optionNameId, optionId } = req.body;
 
   const option = findOption(product.options, optionNameId, optionId);
   if (!option) {
     return next(new AppError('There is no such option for selected product', 404));
   }
 
+  if (!product.colors.includes(color)) {
+    return next(new AppError('There is no such color for selected product', 404));
+  }
+
   if (quantity < 1) {
     return next(new AppError("Quantity can't be a negative value", 400));
   }
+
   let cart = await Cart.findOne({ userId: user._id });
   if (!cart) {
     cart = await Cart.create({ userId: user._id });

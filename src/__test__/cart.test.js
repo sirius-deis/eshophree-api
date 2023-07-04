@@ -4,12 +4,15 @@ const { connect, clearDatabase, closeDatabase } = require('./db');
 const { redisConnect, redisDisconnect } = require('../db/redis');
 const User = require('../models/user.models');
 const Cart = require('../models/cart.models');
+const Product = require('../models/product.models');
 const app = require('../app');
 const makeRequest = require('./makeRequest');
 
 describe('/carts', () => {
   let token = '';
   let cart;
+  let product1;
+  let product3;
 
   beforeAll(async () => {
     await connect();
@@ -31,12 +34,75 @@ describe('/carts', () => {
       .expect(200);
     // eslint-disable-next-line prefer-destructuring
     token = response.body.token;
+    const options = [
+      {
+        title: 'Option 1',
+        optArr: [
+          {
+            opt: 'Opt1',
+            plusToPrice: 203,
+          },
+          {
+            opt: 'Opt2',
+            plusToPrice: 102,
+          },
+        ],
+      },
+    ];
+    product1 = await Product.create({
+      name: 'Product 1',
+      categoryId: '647057399cd597cc0c2c727e',
+      price: 500,
+      brandId: '647057399cd597cc0c2c727e',
+      images: [''],
+      ratingAverage: 5,
+      options,
+      colors: ['black'],
+    });
+    const product2 = await Product.create({
+      name: 'Product 2',
+      categoryId: '647057399cd597cc0c2c727e',
+      price: 700,
+      brandId: '647057399cd597cc0c2c727e',
+      images: [''],
+      ratingAverage: 4,
+      options,
+      colors: ['black'],
+    });
+    product3 = await Product.create({
+      name: 'Product 3',
+      categoryId: '647057399cd597cc0c2c727e',
+      price: 300,
+      brandId: '647057399cd597cc0c2c727e',
+      images: [''],
+      ratingAverage: 2,
+      options,
+      colors: ['black'],
+    });
     cart = await Cart.create({
       userId: response.body.data.user._id,
       products: [
-        { productId: '647057399cd597cc0c2c727e', quantity: 2 },
-        { productId: '647057399cd597cc0c2c7299', quantity: 4 },
-        { productId: '647057379cd597cc0c2c6f36', quantity: 5 },
+        {
+          productId: product1._id,
+          quantity: 2,
+          color: 'black',
+          optionNameId: product1.options[0]._id,
+          optionId: product1.options[0].optArr[0]._id,
+        },
+        {
+          productId: product2._id,
+          quantity: 4,
+          color: 'black',
+          optionNameId: product2.options[0]._id,
+          optionId: product2.options[0].optArr[0]._id,
+        },
+        {
+          productId: product1._id,
+          quantity: 5,
+          color: 'black',
+          optionNameId: product1.options[0]._id,
+          optionId: product1.options[0].optArr[1]._id,
+        },
       ],
     });
   });
@@ -74,10 +140,13 @@ describe('/carts', () => {
     it('should add product to cart', (done) => {
       makeRequest({
         method: 'patch',
-        route: 'products/647057399cd597cc0c2c737e/carts',
+        route: `products/${product3._id}/carts`,
         statusCode: 201,
         body: {
           quantity: 2,
+          color: 'black',
+          optionNameId: product3.options[0]._id,
+          optionId: product3.options[0].optArr[1]._id,
         },
         done,
         token,
@@ -87,10 +156,13 @@ describe('/carts', () => {
     it('should add product to cart which exists there', (done) => {
       makeRequest({
         method: 'patch',
-        route: 'products/647057379cd597cc0c2c6f36/carts',
+        route: `products/${product1._id}/carts`,
         statusCode: 201,
         body: {
           quantity: 1,
+          color: 'black',
+          optionNameId: product1.options[0]._id,
+          optionId: product1.options[0].optArr[1]._id,
         },
         done,
         token,
@@ -129,9 +201,14 @@ describe('/carts', () => {
     it('should delete product from cart', (done) => {
       makeRequest({
         method: 'delete',
-        route: 'products/647057399cd597cc0c2c7299/carts',
+        route: `products/${product1._id}/carts`,
         statusCode: 204,
-        body: { quantityToDelete: 2 },
+        body: {
+          quantityToDelete: 2,
+          color: 'black',
+          optionNameId: product1.options[0]._id,
+          optionId: product1.options[0].optArr[1]._id,
+        },
         done,
         token,
         isContentTypePresent: false,
@@ -139,7 +216,7 @@ describe('/carts', () => {
     });
   });
 
-  describe('/:clear route for deleting', () => {
+  describe('/:clear route for clearing a cart', () => {
     it('should clear cart', (done) => {
       makeRequest({
         method: 'delete',
