@@ -240,7 +240,7 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
   }
 
   if (tag) {
-    queryOptions.tag = { $all: [tag] };
+    queryOptions.tags = { $in: [tag] };
   }
 
   const skip = limit * (page - 1);
