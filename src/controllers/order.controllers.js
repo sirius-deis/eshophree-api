@@ -8,13 +8,9 @@ const OrderDetail = require('../models/orderDetail.models');
 const OrderItem = require('../models/orderItem.models');
 const OrderStatus = require('../models/orderStatus.models');
 const Product = require('../models/product.models');
+const { findOption } = require('../utils/utils');
 
 const findProductById = (products, id) => products.find((product) => id.equals(product.productId));
-
-const findOption = (options, optionNameId, optionId) =>
-  options
-    .find((optionName) => optionName._id.equals(optionNameId))
-    ?.optArr.find((option) => option._id.equals(optionId));
 
 exports.getOrder = catchAsync(async (req, res, next) => {
   const { user } = req;

@@ -4,6 +4,7 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 
 const Cart = require('../models/cart.models');
+const { findOption } = require('../utils/utils');
 
 exports.getCart = catchAsync(async (req, res, next) => {
   const { cartId } = req.params;
@@ -22,9 +23,15 @@ exports.getCart = catchAsync(async (req, res, next) => {
 });
 
 exports.addToCart = catchAsync(async (req, res, next) => {
-  const { productId } = req.params;
+  const { product } = req;
   const { user } = req;
   const { quantity, color, optionNameId, optionId } = req.body;
+
+  const option = findOption(product.options, optionNameId, optionId);
+  if (!option) {
+    return next(new AppError('There is no such option for selected product', 404));
+  }
+
   if (quantity < 1) {
     return next(new AppError("Quantity can't be a negative value", 400));
   }
@@ -33,15 +40,15 @@ exports.addToCart = catchAsync(async (req, res, next) => {
     cart = await Cart.create({ userId: user._id });
   }
   const index = cart.products?.findIndex(
-    (product) =>
-      product.productId.equals(productId) &&
-      product.color === color &&
-      product.optionNameId.equals(optionNameId) &&
-      product.optionId.equals(optionId),
+    (prod) =>
+      prod.productId.equals(product._id) &&
+      prod.color === color &&
+      prod.optionNameId.equals(optionNameId) &&
+      prod.optionId.equals(optionId),
   );
   if (index === undefined || index === -1) {
     cart.products.push({
-      productId,
+      productId: product._id,
       quantity: quantity ?? 1,
       color,
       optionNameId,

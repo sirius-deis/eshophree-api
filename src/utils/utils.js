@@ -17,3 +17,8 @@ exports.createToken = () => {
   const resetToken = crypto.randomBytes(32).toString('hex');
   return resetToken;
 };
+
+exports.findOption = (options, optionNameId, optionId) =>
+  options
+    .find((optionName) => optionName._id.equals(optionNameId))
+    ?.optArr.find((option) => option._id.equals(optionId));

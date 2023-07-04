@@ -29,6 +29,7 @@ describe('/carts', () => {
         password: 'password123',
       })
       .expect(200);
+    // eslint-disable-next-line prefer-destructuring
     token = response.body.token;
     cart = await Cart.create({
       userId: response.body.data.user._id,
