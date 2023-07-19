@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const PictureSchema = new mongoose.Schema({
+const ImageSchema = new mongoose.Schema({
   fileUrl: {
     type: String,
     required: true,
@@ -10,6 +10,6 @@ const PictureSchema = new mongoose.Schema({
   },
 });
 
-const Picture = mongoose.model('Picture', PictureSchema);
+const Image = mongoose.model('Image', ImageSchema);
 
-module.exports = Picture;
+module.exports = Image;

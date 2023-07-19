@@ -63,11 +63,11 @@ const productSchema = new mongoose.Schema(
       type: String,
       maxlength: [2048, "'Length is too long. Max length is 2048 characters"],
     },
-    images: [
+    imageIds: [
       {
         type: mongoose.SchemaTypes.ObjectId,
         required: [true, 'Please provide valid data'],
-        ref: 'Picture',
+        ref: 'Image',
       },
     ],
     ratingQuantity: {

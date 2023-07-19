@@ -15,7 +15,6 @@ const {
   deleteProductVendor,
   addTagsToProduct,
   deleteTagsFromProduct,
-  temp,
 } = require('../controllers/product.controllers');
 const reviewRouter = require('./review.routes');
 const discountRouter = require('./discount.routes');
@@ -45,8 +44,6 @@ productRouter.use('/:productId/wishlist', wishlistRouter);
 
 productRouter.get('/categories', getProductCategories);
 productRouter.get('/vendors', getProductVendorsList);
-
-productRouter.get('/temp', temp);
 
 productRouter
   .route('/')

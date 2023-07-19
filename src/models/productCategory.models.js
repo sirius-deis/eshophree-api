@@ -15,10 +15,10 @@ const ProductCategorySchema = new mongoose.Schema(
     image: {
       type: String,
     },
-    pictureId: {
+    imageId: {
       type: mongoose.SchemaTypes.ObjectId,
       required: [true, 'Please provide valid data'],
-      ref: 'Picture',
+      ref: 'Image',
     },
   },
   {

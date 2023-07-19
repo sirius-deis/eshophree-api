@@ -6,7 +6,7 @@ const { resizeAndSave, deleteFile } = require('../api/file');
 const Product = require('../models/product.models');
 const ProductCategory = require('../models/productCategory.models');
 const ProductVendor = require('../models/productVendor.models');
-const Picture = require('../models/picture.models');
+const Image = require('../models/image.models');
 
 const addToOptionsIfNotEmpty = (options, key, value) => {
   if (value && typeof value === 'string') {
@@ -17,7 +17,7 @@ const addToOptionsIfNotEmpty = (options, key, value) => {
 };
 
 exports.getProductCategories = catchAsync(async (req, res) => {
-  const productCategory = await ProductCategory.find().populate('pictureId');
+  const productCategory = await ProductCategory.find().populate('imageId');
 
   res.status(200).json({
     message: 'Categories were found successfully',
@@ -34,12 +34,12 @@ exports.addProductCategory = catchAsync(async (req, res) => {
 
   const cldResponse = await resizeAndSave(buffer, { width: 200, height: 200 }, 'jpeg', 'products');
 
-  const picture = await Picture.create({
+  const image = await Image.create({
     fileUrl: cldResponse.secure_url,
     publicId: cldResponse.public_id,
   });
 
-  await ProductCategory.create({ name, pictureId: picture._id, desc });
+  await ProductCategory.create({ name, ImageId: image._id, desc });
 
   res.status(201).json({
     message: 'Category was added successfully',
@@ -52,9 +52,9 @@ exports.editProductCategory = catchAsync(async (req, res) => {
 
   const { file } = req;
 
-  const productCategory = await ProductCategory.findById(productCategoryId).populate('pictureId');
+  const productCategory = await ProductCategory.findById(productCategoryId);
 
-  let picture;
+  let image;
 
   if (file) {
     const { buffer } = file;
@@ -66,18 +66,18 @@ exports.editProductCategory = catchAsync(async (req, res) => {
       'products',
     );
 
-    picture = await Picture.findById(productCategory.pictureId);
+    image = await Image.findById(productCategory.imageId);
 
-    await deleteFile(picture.publicId);
+    await deleteFile(image.publicId);
 
-    picture.fileUrl = cldResponse.secure_url;
-    picture.publicId = cldResponse.public_id;
+    image.fileUrl = cldResponse.secure_url;
+    image.publicId = cldResponse.public_id;
   }
 
   productCategory.name = name;
   productCategory.desc = desc;
 
-  await Promise.all([productCategory.save(), picture?.save()]);
+  await Promise.all([productCategory.save(), image?.save()]);
 
   res.status(200).json({
     message: 'Category was updated successfully',
@@ -92,9 +92,11 @@ exports.deleteProductCategory = catchAsync(async (req, res, next) => {
     await Product.deleteMany({ categoryId: productCategoryId });
   }
 
-  const productCategory = await ProductCategory.findByIdAndDelete(productCategoryId);
+  const productCategory = await ProductCategory.findByIdAndDelete(productCategoryId).populate(
+    'imageId',
+  );
 
-  // await deleteFile(picture.publicId);
+  await deleteFile(productCategory.imageId.publicId);
 
   if (!productCategory) {
     return next(new AppError('There is no product category with such id', 404));
@@ -249,13 +251,7 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
 
   if (fields) {
     fields.split(',').forEach((field) => {
-      if (field === 'images') {
-        fieldsToSelect[field] = {
-          $slice: 1,
-        };
-      } else {
-        fieldsToSelect[field] = 1;
-      }
+      fieldsToSelect[field] = 1;
     });
   }
 
@@ -270,6 +266,12 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
           percent: 1,
         },
       },
+    })
+    .populate({
+      path: 'imageIds',
+      options: {
+        $slice: 1,
+      },
     });
 
   if (products.length < 1) {
@@ -282,25 +284,27 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
 });
 
 exports.getProductById = catchAsync(async (req, res) => {
-  const product = await req.product.populate({
-    path: 'discount',
-    options: {
-      select: {
-        percent: 1,
+  const product = await req.product
+    .populate({
+      path: 'discount',
+      options: {
+        select: {
+          percent: 1,
+        },
       },
-    },
-  });
+    })
+    .populate('imageIds');
   res.status(200).json({ message: 'Product was found', data: product });
 });
 
 exports.updateProduct = catchAsync(async (req, res, next) => {
   const { product } = req;
   //prettier-ignore
-  const { name, categoryId, sku, price, brandId, info, about, options, desc, images,
+  const { name, categoryId, sku, price, brandId, info, about, options, desc
   } = req.body;
   //prettier-ignore
   // eslint-disable-next-line max-len
-  const map = addToMapIfValuesExist({ name, categoryId, sku, price, brandId, info, about, options, desc, images });
+  const map = addToMapIfValuesExist({ name, categoryId, sku, price, brandId, info, about, options, desc });
 
   if (!map) {
     return next(new AppError('Please provide all necessary fields', 400));
@@ -310,6 +314,8 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 
   res.status(200).json({ message: 'Product was updated successfully' });
 });
+
+//TODO: add routes for updating photos on product
 
 exports.addProduct = catchAsync(async (req, res, next) => {
   //prettier-ignore
@@ -328,6 +334,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
   res.status(201).json({ message: 'Product was added successfully' });
 });
 
+// TODO:
 exports.deleteProduct = catchAsync(async (req, res) => {
   const { product } = req;
   await product.deleteOne();
