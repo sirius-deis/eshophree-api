@@ -1,17 +1,12 @@
-const path = require('path');
-const fs = require('fs');
-
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { addToMapIfValuesExist } = require('../utils/utils');
-const { resizeAndSave, createFolderIfNotExists, deletePhotoIfExists } = require('../api/file');
+const { resizeAndSave, deleteFile } = require('../api/file');
 
 const Product = require('../models/product.models');
 const ProductCategory = require('../models/productCategory.models');
 const ProductVendor = require('../models/productVendor.models');
-
-const { IMAGE_FOLDER } = process.env;
-const dirPath = path.resolve(__dirname, '..', IMAGE_FOLDER, 'products');
+const Picture = require('../models/picture.models');
 
 const addToOptionsIfNotEmpty = (options, key, value) => {
   if (value && typeof value === 'string') {
@@ -22,7 +17,7 @@ const addToOptionsIfNotEmpty = (options, key, value) => {
 };
 
 exports.getProductCategories = catchAsync(async (req, res) => {
-  const productCategory = await ProductCategory.find();
+  const productCategory = await ProductCategory.find().populate('pictureId');
 
   res.status(200).json({
     message: 'Categories were found successfully',
@@ -35,16 +30,16 @@ exports.addProductCategory = catchAsync(async (req, res) => {
 
   const { file } = req;
 
-  await createFolderIfNotExists(dirPath);
+  const { buffer } = file;
 
-  const { buffer, originalName } = file;
-  const timestamp = new Date().toISOString();
-  const fileName = `${timestamp}-${originalName}`;
-  const filePath = `${dirPath}/${fileName}`;
+  const cldResponse = await resizeAndSave(buffer, { width: 200, height: 200 }, 'jpeg', 'products');
 
-  await resizeAndSave(buffer, { width: 200, height: 200 }, 'jpeg', filePath);
+  const picture = await Picture.create({
+    fileUrl: cldResponse.secure_url,
+    publicId: cldResponse.public_id,
+  });
 
-  await ProductCategory.create({ name, image: fileName, desc });
+  await ProductCategory.create({ name, pictureId: picture._id, desc });
 
   res.status(201).json({
     message: 'Category was added successfully',
@@ -57,25 +52,32 @@ exports.editProductCategory = catchAsync(async (req, res) => {
 
   const { file } = req;
 
-  const productCategory = await ProductCategory.findById(productCategoryId);
+  const productCategory = await ProductCategory.findById(productCategoryId).populate('pictureId');
+
+  let picture;
 
   if (file) {
-    const { buffer, originalName } = file;
-    const timestamp = new Date().toISOString();
-    const fileName = `${timestamp}-${originalName}`;
-    const filePath = `${dirPath}/${fileName}`;
+    const { buffer } = file;
 
-    await resizeAndSave(buffer, { width: 200, height: 200 }, 'jpeg', filePath);
+    const cldResponse = await resizeAndSave(
+      buffer,
+      { width: 200, height: 200 },
+      'jpeg',
+      'products',
+    );
 
-    await deletePhotoIfExists(`${dirPath}/${productCategory.image}`);
+    picture = await Picture.findById(productCategory.pictureId);
 
-    productCategory.image = fileName;
+    await deleteFile(picture.publicId);
+
+    picture.fileUrl = cldResponse.secure_url;
+    picture.publicId = cldResponse.public_id;
   }
 
   productCategory.name = name;
   productCategory.desc = desc;
 
-  await productCategory.save();
+  await Promise.all([productCategory.save(), picture?.save()]);
 
   res.status(200).json({
     message: 'Category was updated successfully',
@@ -92,9 +94,7 @@ exports.deleteProductCategory = catchAsync(async (req, res, next) => {
 
   const productCategory = await ProductCategory.findByIdAndDelete(productCategoryId);
 
-  try {
-    await fs.unlink(`${dirPath}/${productCategory.image}`);
-  } catch {}
+  // await deleteFile(picture.publicId);
 
   if (!productCategory) {
     return next(new AppError('There is no product category with such id', 404));

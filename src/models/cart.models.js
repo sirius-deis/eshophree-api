@@ -4,7 +4,7 @@ const CartSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Types.ObjectId,
-      ref: 'user',
+      ref: 'User',
       required: [true, "This field can't be empty. Please provide valid id od exiting user"],
       unique: true,
     },

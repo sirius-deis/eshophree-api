@@ -13,12 +13,11 @@ const sendEmail = require('../api/email');
 const { addToMapIfValuesExist } = require('../utils/utils');
 const { getValue, setValue } = require('../db/redis');
 const { createToken } = require('../utils/utils');
-const { resizeAndSave, createFolderIfNotExists, deletePhotoIfExists } = require('../api/file');
+const { resizeAndSave, deleteFile } = require('../api/file');
 
 const catchAsync = require('../utils/catchAsync');
 
-const { JWT_SECRET, JWT_EXPIRES_IN, IMAGE_FOLDER } = process.env;
-const dirPath = path.resolve(__dirname, '..', IMAGE_FOLDER, 'users');
+const { JWT_SECRET, JWT_EXPIRES_IN } = process.env;
 
 const signToken = (id) => jwt.sign({ id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
@@ -56,10 +55,6 @@ const addTokenToBlocklist = async (id, token, expirationTime) => {
   if (value === null) {
     await setValue(`${id}`, token, { EX: expirationTime });
   }
-};
-
-const deleteUserPhoto = async (photoPath) => {
-  await deletePhotoIfExists(photoPath);
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
@@ -283,7 +278,7 @@ exports.deleteAccount = catchAsync(async (req, res, next) => {
   await UserInfo.findByIdAndDelete(user._id);
   await UserPayment.findByIdAndDelete(user._id);
   if (user.photo) {
-    deleteUserPhoto(`${dirPath}/${user.photo}`);
+    // deleteUserPhoto(`${dirPath}/${user.photo}`);
   }
   await user.deleteOne();
 
@@ -363,17 +358,14 @@ exports.updateUserPayment = catchAsync(async (req, res, next) => {
 
 exports.updatePhoto = catchAsync(async (req, res, next) => {
   const { user, file } = req;
-  await createFolderIfNotExists(dirPath);
+  // await createFolderIfNotExists(dirPath);
 
-  const { buffer, originalName } = file;
-  const timestamp = new Date().toISOString();
-  const fileName = `${timestamp}-${originalName}`;
-  const filePath = `${dirPath}/${fileName}`;
+  const { buffer } = file;
 
-  await resizeAndSave(buffer, { width: 200, height: 200 }, 'jpeg', filePath);
+  await resizeAndSave(buffer, { width: 200, height: 200 }, 'jpeg');
 
   if (user.photo) {
-    deleteUserPhoto(`${dirPath}/${user.photo}`);
+    // deleteUserPhoto(`${dirPath}/${user.photo}`);
   }
 
   res.status(200).json({
