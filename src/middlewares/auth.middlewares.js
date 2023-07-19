@@ -10,6 +10,7 @@ exports.getUser = catchAsync(async (req, res, next) => {
   if (!token) {
     return next();
   }
+
   const payload = jwt.verify(token, process.env.JWT_SECRET);
   if (!payload) {
     return next();

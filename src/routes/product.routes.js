@@ -15,6 +15,7 @@ const {
   deleteProductVendor,
   addTagsToProduct,
   deleteTagsFromProduct,
+  addImagesToProduct,
 } = require('../controllers/product.controllers');
 const reviewRouter = require('./review.routes');
 const discountRouter = require('./discount.routes');
@@ -33,7 +34,7 @@ const {
   isMongoIdInBody,
   isArray,
 } = require('../utils/validator');
-const { uploadPhoto } = require('../api/file');
+const { uploadPhoto, uploadArrayOfPhoto } = require('../api/file');
 
 const productRouter = express.Router();
 
@@ -92,6 +93,18 @@ productRouter
     validator,
     findProduct,
     deleteProduct,
+  );
+
+productRouter
+  .route('/:productId/images')
+  .patch(
+    isLoggedIn,
+    restrictTo('admin'),
+    isMongoId({ field: 'productId' }),
+    validator,
+    findProduct,
+    uploadArrayOfPhoto('images'),
+    addImagesToProduct,
   );
 
 productRouter

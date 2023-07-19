@@ -284,16 +284,19 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
 });
 
 exports.getProductById = catchAsync(async (req, res) => {
-  const product = await req.product
-    .populate({
+  const product = await req.product.populate([
+    {
       path: 'discount',
       options: {
         select: {
           percent: 1,
         },
       },
-    })
-    .populate('imageIds');
+    },
+    {
+      path: 'imageIds',
+    },
+  ]);
   res.status(200).json({ message: 'Product was found', data: product });
 });
 
@@ -319,24 +322,76 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 
 exports.addProduct = catchAsync(async (req, res, next) => {
   //prettier-ignore
-  const { name, categoryId, sku, price, brandId, info, about, options, desc, images,
+  const { name, categoryId, sku, price, brandId, info, about, options, desc,
   } = req.body;
+
   //prettier-ignore
   // eslint-disable-next-line max-len
   if (!Array.isArray(info) && info.length < 1 || !Array.isArray(about) && about.length < 1 || !Array.isArray(options) &&
-    options.length < 1 || Array.isArray(images) && images.length < 1) {
+    options.length < 1) {
     return next(new AppError('Please provide correct data', 400));
   }
   //prettier-ignore
   // eslint-disable-next-line max-len
-  await Product.create({ name, categoryId, sku, price, brandId, info, about, options, desc, images });
+
+  const product = await Product.create({
+    name,
+    categoryId,
+    sku,
+    price,
+    brandId,
+    info,
+    about,
+    options,
+    desc,
+  });
 
   res.status(201).json({ message: 'Product was added successfully' });
 });
 
-// TODO:
+exports.addImagesToProduct = catchAsync(async (req, res) => {
+  const { product, files } = req;
+
+  const imagePromises = [];
+
+  for (let i = 0; i < files.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const cldResponse = await resizeAndSave(
+      files[i].buffer,
+      { width: 1200, height: 1200 },
+      'jpeg',
+      'products',
+    );
+
+    imagePromises.push(
+      Image.create({
+        fileUrl: cldResponse.secure_url,
+        publicId: cldResponse.public_id,
+      }),
+    );
+  }
+
+  const imagesArr = await Promise.all(imagePromises);
+
+  product.imageIds = imagesArr.map((image) => image._id);
+
+  await product.save();
+
+  res.status(200).json({ message: 'Images to product were added successfully' });
+});
+
 exports.deleteProduct = catchAsync(async (req, res) => {
-  const { product } = req;
+  const product = await req.product.populate({
+    path: 'imageIds',
+    options: {
+      select: {
+        publicId: 1,
+      },
+    },
+  });
+
+  await Promise.all(product.imageIds.map((image) => deleteFile(image.publicId)));
+
   await product.deleteOne();
 
   res.status(204).send();
