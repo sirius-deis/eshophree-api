@@ -318,7 +318,39 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: 'Product was updated successfully' });
 });
 
-//TODO: add routes for updating photos on product
+exports.deleteImageFromProduct = catchAsync(async (req, res, next) => {
+  const product = await req.product.populate({
+    path: 'imageIds',
+  });
+  const { imageId } = req.params;
+
+  const image = await Image.findById(imageId);
+
+  if (!image) {
+    return next(new AppError('There is no image with such id', 404));
+  }
+
+  const imageIdIndex = product.imageIds.find((id) => id._id.equals(imageId));
+
+  if (imageIdIndex === -1) {
+    return next(new AppError('This image does not belong to this product', 404));
+  }
+
+  await Promise.all([
+    image.deleteOne(),
+    Product.updateOne(
+      { _id: product._id },
+      {
+        $pull: {
+          imageIds: imageId,
+        },
+      },
+    ),
+    deleteFile(image.publicId),
+  ]);
+
+  res.status(200).json({ message: 'Image was deleted successfully' });
+});
 
 exports.addProduct = catchAsync(async (req, res, next) => {
   //prettier-ignore
@@ -334,7 +366,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
   //prettier-ignore
   // eslint-disable-next-line max-len
 
-  const product = await Product.create({
+  await Product.create({
     name,
     categoryId,
     sku,

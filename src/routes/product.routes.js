@@ -16,6 +16,7 @@ const {
   addTagsToProduct,
   deleteTagsFromProduct,
   addImagesToProduct,
+  deleteImageFromProduct,
 } = require('../controllers/product.controllers');
 const reviewRouter = require('./review.routes');
 const discountRouter = require('./discount.routes');
@@ -105,6 +106,18 @@ productRouter
     findProduct,
     uploadArrayOfPhoto('images'),
     addImagesToProduct,
+  );
+
+productRouter
+  .route('/:productId/images/:imageId')
+  .patch(
+    isLoggedIn,
+    restrictTo('admin'),
+    isMongoId({ field: 'productId' }),
+    isMongoId({ field: 'imageId' }),
+    validator,
+    findProduct,
+    deleteImageFromProduct,
   );
 
 productRouter
