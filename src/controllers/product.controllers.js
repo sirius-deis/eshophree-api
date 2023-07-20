@@ -366,6 +366,12 @@ exports.addProduct = catchAsync(async (req, res, next) => {
   //prettier-ignore
   // eslint-disable-next-line max-len
 
+  const promises = await Promise.all([ProductCategory.findById(categoryId), ProductVendor.findById(brandId)]);
+
+  if (promises[0] === null || promises[1] === null) {
+    return next(new AppError('There is no such category or brand', 404));
+  }
+
   await Product.create({
     name,
     categoryId,
