@@ -15,10 +15,11 @@ const {
   updateUserInfo,
   updateUserPayment,
   updatePhoto,
+  deletePhoto,
 } = require('../controllers/user.controllers');
 const { isLoggedIn } = require('../middlewares/auth.middlewares');
 const validator = require('../middlewares/validation.middlwares');
-const { isEmail, isNthLength } = require('../utils/validator');
+const { isEmail, isNthLength, isMongoId } = require('../utils/validator');
 const { uploadPhoto } = require('../api/uploadFile');
 
 const userRouter = express.Router();
@@ -75,7 +76,10 @@ userRouter.patch('/update-payment', updateUserPayment);
 userRouter.post('/deactivate', isNthLength({ field: 'password' }), validator, deactivate);
 userRouter.get('/logout', logout);
 userRouter.get('/me', me);
-userRouter.patch('/photo', uploadPhoto('picture'), updatePhoto);
+
+userRouter.patch('/pictures', uploadPhoto('photo'), updatePhoto);
+userRouter.delete('/pictures/:pictureId', isMongoId({ field: 'pictureId' }), deletePhoto);
+
 userRouter.delete('/delete', isNthLength({ field: 'password' }), validator, deleteAccount);
 
 module.exports = userRouter;

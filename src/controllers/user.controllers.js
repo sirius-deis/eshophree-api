@@ -392,3 +392,25 @@ exports.updatePhoto = catchAsync(async (req, res, next) => {
     message: 'Photo was updated successfully',
   });
 });
+
+exports.deletePhoto = catchAsync(async (req, res, next) => {
+  const { user } = req;
+  const { pictureId } = req.params;
+
+  const image = await Image.findById(pictureId);
+  if (!image) {
+    return next(new AppError('There is no picture with provided id', 404));
+  }
+
+  const isExistOnUser = user.pictureId.equals(pictureId);
+
+  if (!isExistOnUser) {
+    return next(new AppError('There is no picture with provided id for such a user', 404));
+  }
+
+  user.pictureId = undefined;
+
+  await Promise.all([deleteFile(image.publicId), image.deleteOne, user.save()]);
+
+  res.status(204).send();
+});
