@@ -45,8 +45,9 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    photo: {
-      type: String,
+    pictureId: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'Image',
     },
   },
   {

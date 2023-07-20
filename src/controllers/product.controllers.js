@@ -1,7 +1,7 @@
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { addToMapIfValuesExist } = require('../utils/utils');
-const { resizeAndSave, deleteFile } = require('../api/file');
+const { resizeAndSave, deleteFile } = require('../api/uploadFile');
 
 const Product = require('../models/product.models');
 const ProductCategory = require('../models/productCategory.models');

@@ -13,9 +13,10 @@ const sendEmail = require('../api/email');
 const { addToMapIfValuesExist } = require('../utils/utils');
 const { getValue, setValue } = require('../db/redis');
 const { createToken } = require('../utils/utils');
-const { resizeAndSave, deleteFile } = require('../api/file');
+const { resizeAndSave, deleteFile } = require('../api/uploadFile');
 
 const catchAsync = require('../utils/catchAsync');
+const Image = require('../models/image.models');
 
 const { JWT_SECRET, JWT_EXPIRES_IN } = process.env;
 
@@ -92,7 +93,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email }).select('+password').populate('pictureId');
   if (!user || !(await user.checkPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401));
   }
@@ -267,7 +268,7 @@ exports.logout = (req, res) => {
 };
 
 exports.deleteAccount = catchAsync(async (req, res, next) => {
-  const { user } = req;
+  const user = req.user.populate('pictureId');
   const { password } = req.body;
   if (!(await user.checkPassword(password, user.password))) {
     return next(new AppError('Incorrect password', 401));
@@ -280,13 +281,14 @@ exports.deleteAccount = catchAsync(async (req, res, next) => {
   if (user.photo) {
     // deleteUserPhoto(`${dirPath}/${user.photo}`);
   }
-  await user.deleteOne();
+
+  await Promise.all([deleteFile(user.pictureId.publicId), user.deleteOne()]);
 
   res.status(204).send();
 });
 
 exports.me = catchAsync(async (req, res) => {
-  const { user } = req;
+  const user = req.user.populate('pictureId');
   const cart = await Cart.findOne({ userId: user._id }).populate('products.productId');
   const wishlist = await Wishlist.findOne({ userId: user._id }).populate('products.productId');
 
@@ -357,16 +359,34 @@ exports.updateUserPayment = catchAsync(async (req, res, next) => {
 });
 
 exports.updatePhoto = catchAsync(async (req, res, next) => {
-  const { user, file } = req;
-  // await createFolderIfNotExists(dirPath);
+  const user = await req.user.populate('pictureId');
+
+  const { file } = req;
 
   const { buffer } = file;
 
-  await resizeAndSave(buffer, { width: 200, height: 200 }, 'jpeg');
+  const cldResponse = await resizeAndSave(buffer, { width: 200, height: 200 }, 'jpeg', 'users');
 
-  if (user.photo) {
-    // deleteUserPhoto(`${dirPath}/${user.photo}`);
+  if (user.pictureId) {
+    await Promise.all([
+      deleteFile(user.pictureId.publicId),
+      Image.findByIdAndUpdate(user.pictureId._id, {
+        $set: {
+          fileUrl: cldResponse.secure_url,
+          publicId: cldResponse.public_id,
+        },
+      }),
+    ]);
+  } else {
+    const image = await Image.create({
+      fileUrl: cldResponse.secure_url,
+      publicId: cldResponse.public_id,
+    });
+
+    user.pictureId = image._id;
   }
+
+  await user.save();
 
   res.status(200).json({
     message: 'Photo was updated successfully',

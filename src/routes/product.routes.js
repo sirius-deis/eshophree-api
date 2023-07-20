@@ -35,7 +35,7 @@ const {
   isMongoIdInBody,
   isArray,
 } = require('../utils/validator');
-const { uploadPhoto, uploadArrayOfPhoto } = require('../api/file');
+const { uploadPhoto, uploadArrayOfPhoto } = require('../api/uploadFile');
 
 const productRouter = express.Router();
 
